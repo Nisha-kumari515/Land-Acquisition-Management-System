@@ -1,0 +1,26 @@
+{
+  "name": "bhoomisetu-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 1 backend foundation for the BHOOMISETU land acquisition management system.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:validate": "prisma validate",
+    "prisma:format": "prisma format"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.0"
+  }
+}
