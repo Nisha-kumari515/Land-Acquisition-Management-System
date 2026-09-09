@@ -6,3 +6,398 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum RoleCode {
+  NATIONAL_ADMIN
+  STATE_OFFICER
+  DISTRICT_OFFICER
+  ACQUISITION_OFFICER
+  FINANCE_OFFICER
+  RR_OFFICER
+  FIELD_OFFICER
+}
+
+enum ProjectStatus {
+  PROPOSED
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum AcquisitionStage {
+  PROPOSAL
+  SCRUTINY
+  SURVEY
+  NOTIFICATION
+  AWARD
+  COMPENSATION
+  POSSESSION
+  RR
+  COMPLETED
+}
+
+enum CompensationStatus {
+  PENDING
+  ASSESSED
+  APPROVED
+  PARTIALLY_PAID
+  PAID
+  ON_HOLD
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model Role {
+  id        String   @id @default(cuid())
+  code      RoleCode @unique
+  name      String
+  users     User[]
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id                 String                    @id @default(cuid())
+  name               String
+  email              String                    @unique
+  passwordHash       String
+  roleId             String
+  stateId            String?
+  districtId         String?
+  isActive           Boolean                   @default(true)
+  role               Role                      @relation(fields: [roleId], references: [id])
+  state              State?                    @relation(fields: [stateId], references: [id])
+  district           District?                 @relation(fields: [districtId], references: [id])
+  createdProjects    Project[]                 @relation("ProjectCreator")
+  stageChanges       AcquisitionStageHistory[]
+  uploadedDocuments  Document[]                @relation("DocumentUploader")
+  auditLogs          AuditLog[]
+  fieldVerifications FieldVerification[]
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  @@index([roleId])
+  @@index([stateId])
+  @@index([districtId])
+}
+
+model State {
+  id        String     @id @default(cuid())
+  code      String     @unique
+  name      String
+  districts District[]
+  users     User[]
+  projects  Project[]
+  parcels   Parcel[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model District {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  name      String
+  stateId   String
+  state     State     @relation(fields: [stateId], references: [id])
+  users     User[]
+  projects  Project[]
+  parcels   Parcel[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([stateId])
+}
+
+model Project {
+  id             String                   @id @default(cuid())
+  code           String                   @unique
+  name           String
+  description    String?
+  department     String
+  stateId        String
+  districtId     String?
+  status         ProjectStatus            @default(PROPOSED)
+  startDate      DateTime?
+  targetDate     DateTime?
+  geometry       Unsupported("geometry")?
+  state          State                    @relation(fields: [stateId], references: [id])
+  district       District?                @relation(fields: [districtId], references: [id])
+  createdById    String
+  createdBy      User                     @relation("ProjectCreator", fields: [createdById], references: [id])
+  projectParcels ProjectParcel[]
+  documents      Document[]
+  riskAlerts     RiskAlert[]
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  @@index([stateId])
+  @@index([districtId])
+  @@index([status])
+}
+
+model Parcel {
+  id                 String                   @id @default(cuid())
+  stateId            String
+  districtId         String
+  circle             String?
+  village            String
+  dagNo              String?
+  pattaNo            String?
+  ulpin              String?                  @unique
+  area               Decimal                  @db.Decimal(14, 4)
+  geometry           Unsupported("geometry")?
+  sourceSystem       String
+  sourceId           String
+  state              State                    @relation(fields: [stateId], references: [id])
+  district           District                 @relation(fields: [districtId], references: [id])
+  owners             ParcelOwner[]
+  projectParcels     ProjectParcel[]
+  documents          Document[]
+  fieldVerifications FieldVerification[]
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  @@unique([sourceSystem, sourceId])
+  @@index([stateId])
+  @@index([districtId])
+  @@index([village])
+}
+
+model ParcelOwner {
+  id           String   @id @default(cuid())
+  parcelId     String
+  name         String
+  identifier   String?
+  ownershipPct Decimal? @db.Decimal(5, 2)
+  isVerified   Boolean  @default(false)
+  parcel       Parcel   @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([parcelId])
+}
+
+model ProjectParcel {
+  id                 String             @id @default(cuid())
+  projectId          String
+  parcelId           String
+  affectedArea       Decimal            @db.Decimal(14, 4)
+  affectedPercentage Decimal            @db.Decimal(6, 2)
+  acquisitionStage   AcquisitionStage   @default(PROPOSAL)
+  compensationStatus CompensationStatus @default(PENDING)
+  possessionDate     DateTime?
+  rrStatus           String?
+  riskLevel          RiskLevel          @default(LOW)
+  project            Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parcel             Parcel             @relation(fields: [parcelId], references: [id])
+  acquisitionCase    AcquisitionCase?
+  riskAlerts         RiskAlert[]
+  rrFamilies         RrFamily[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@unique([projectId, parcelId])
+  @@index([projectId])
+  @@index([parcelId])
+  @@index([acquisitionStage])
+  @@index([riskLevel])
+}
+
+model AcquisitionCase {
+  id              String                    @id @default(cuid())
+  projectParcelId String                    @unique
+  currentStage    AcquisitionStage          @default(PROPOSAL)
+  remarks         String?
+  projectParcel   ProjectParcel             @relation(fields: [projectParcelId], references: [id], onDelete: Cascade)
+  history         AcquisitionStageHistory[]
+  notifications   Notification[]
+  award           Award?
+  compensation    Compensation?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+}
+
+model AcquisitionStageHistory {
+  id                String            @id @default(cuid())
+  acquisitionCaseId String
+  previousStage     AcquisitionStage?
+  newStage          AcquisitionStage
+  changedById       String
+  remarks           String?
+  acquisitionCase   AcquisitionCase   @relation(fields: [acquisitionCaseId], references: [id], onDelete: Cascade)
+  changedBy         User              @relation(fields: [changedById], references: [id])
+  createdAt         DateTime          @default(now())
+
+  @@index([acquisitionCaseId])
+  @@index([changedById])
+}
+
+model Notification {
+  id                String          @id @default(cuid())
+  acquisitionCaseId String
+  notificationNo    String
+  notificationDate  DateTime
+  publicationDate   DateTime?
+  acquisitionCase   AcquisitionCase @relation(fields: [acquisitionCaseId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
+
+  @@index([acquisitionCaseId])
+}
+
+model Award {
+  id                String          @id @default(cuid())
+  acquisitionCaseId String          @unique
+  awardNo           String
+  awardDate         DateTime
+  amount            Decimal         @db.Decimal(16, 2)
+  acquisitionCase   AcquisitionCase @relation(fields: [acquisitionCaseId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model Compensation {
+  id                String             @id @default(cuid())
+  acquisitionCaseId String             @unique
+  assessedAmount    Decimal            @db.Decimal(16, 2)
+  approvedAmount    Decimal?           @db.Decimal(16, 2)
+  paidAmount        Decimal            @default(0) @db.Decimal(16, 2)
+  status            CompensationStatus @default(PENDING)
+  assessmentDate    DateTime?
+  approvalDate      DateTime?
+  paymentDate       DateTime?
+  acquisitionCase   AcquisitionCase    @relation(fields: [acquisitionCaseId], references: [id], onDelete: Cascade)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model RrFamily {
+  id                   String          @id @default(cuid())
+  projectParcelId      String
+  familyReference      String
+  membersCount         Int
+  eligible             Boolean         @default(false)
+  status               String          @default("PENDING")
+  resettlementProgress Int             @default(0)
+  projectParcel        ProjectParcel   @relation(fields: [projectParcelId], references: [id], onDelete: Cascade)
+  entitlements         RrEntitlement[]
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  @@index([projectParcelId])
+}
+
+model RrEntitlement {
+  id              String   @id @default(cuid())
+  rrFamilyId      String
+  entitlementType String
+  amount          Decimal? @db.Decimal(16, 2)
+  status          String   @default("PENDING")
+  rrFamily        RrFamily @relation(fields: [rrFamilyId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([rrFamilyId])
+}
+
+model Document {
+  id           String   @id @default(cuid())
+  name         String
+  documentType String
+  projectId    String?
+  parcelId     String?
+  uploadedById String
+  source       String
+  version      Int      @default(1)
+  storageRef   String
+  project      Project? @relation(fields: [projectId], references: [id])
+  parcel       Parcel?  @relation(fields: [parcelId], references: [id])
+  uploadedBy   User     @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([projectId])
+  @@index([parcelId])
+}
+
+model RiskAlert {
+  id                String         @id @default(cuid())
+  projectId         String?
+  projectParcelId   String?
+  level             RiskLevel
+  score             Int
+  reasons           Json
+  recommendedAction String
+  resolvedAt        DateTime?
+  project           Project?       @relation(fields: [projectId], references: [id])
+  projectParcel     ProjectParcel? @relation(fields: [projectParcelId], references: [id])
+  createdAt         DateTime       @default(now())
+
+  @@index([projectId])
+  @@index([projectParcelId])
+  @@index([level])
+}
+
+model FieldVerification {
+  id           String             @id @default(cuid())
+  parcelId     String
+  verifiedById String
+  status       VerificationStatus @default(PENDING)
+  notes        String?
+  verifiedAt   DateTime?
+  parcel       Parcel             @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+  verifiedBy   User               @relation(fields: [verifiedById], references: [id])
+  createdAt    DateTime           @default(now())
+
+  @@index([parcelId])
+  @@index([verifiedById])
+}
+
+model DataSource {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  syncLogs    SyncLog[]
+  createdAt   DateTime  @default(now())
+}
+
+model SyncLog {
+  id             String     @id @default(cuid())
+  dataSourceId   String
+  startedAt      DateTime
+  completedAt    DateTime?
+  status         String
+  recordsRead    Int        @default(0)
+  recordsWritten Int        @default(0)
+  errorMessage   String?
+  rawSnapshotRef String?
+  dataSource     DataSource @relation(fields: [dataSourceId], references: [id])
+  createdAt      DateTime   @default(now())
+
+  @@index([dataSourceId])
+  @@index([status])
+}
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  userId        String?
+  action        String
+  entity        String
+  entityId      String
+  previousValue Json?
+  newValue      Json?
+  user          User?    @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}

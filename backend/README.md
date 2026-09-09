@@ -1,8 +1,8 @@
 # BHOOMISETU Backend
 
-Phase 1 foundation for the BHOOMISETU Smart India Hackathon 2026 prototype.
+Phase 2 database foundation for the BHOOMISETU Smart India Hackathon 2026 prototype.
 
-BHOOMISETU is a modular Express.js monolith backed by PostgreSQL and PostGIS. This phase intentionally contains only the runtime foundation and database health check. Business modules will be added in later phases.
+BHOOMISETU is a modular Express.js monolith backed by PostgreSQL and PostGIS. The backend now includes the initial parcel-centric relational schema and synthetic demo seed data.
 
 ## Stack
 
@@ -27,7 +27,7 @@ Variables:
 | --- | --- | --- |
 | `NODE_ENV` | Runtime environment | `development` |
 | `PORT` | HTTP port | `3000` |
-| `DATABASE_URL` | PostgreSQL connection string | local Compose-compatible URL |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://bhoomisetu:bhoomisetu_dev@localhost:5433/bhoomisetu?schema=public` |
 | `CORS_ORIGIN` | Allowed browser origin | `http://localhost:3000` |
 
 Do not commit `.env` or real credentials.
@@ -45,6 +45,8 @@ Install dependencies, generate Prisma Client, and start the API:
 ```bash
 npm install
 npm run prisma:generate
+npm run prisma:migrate -- --name init
+npm run prisma:seed
 npm start
 ```
 
@@ -73,13 +75,35 @@ The route runs a PostgreSQL query and a PostGIS version query. A healthy respons
 }
 ```
 
+## Database Credentials
+
+The Compose development database uses these local-only credentials:
+
+| Setting | Value |
+| --- | --- |
+| Host | `localhost` |
+| Port | `5433` |
+| Database | `bhoomisetu` |
+| Username | `bhoomisetu` |
+| Password | `bhoomisetu_dev` |
+
+The backend container uses the internal database hostname `db` and port `5432`. These credentials are synthetic development values and must be replaced for any shared or production environment.
+
 ## Prisma
 
-The initial Prisma schema contains the PostgreSQL datasource and client generator only. Domain models and migrations belong to Phase 2.
+The Prisma schema contains states, districts, users and roles, projects, parcels, ownership, acquisition workflow, compensation, R&R, documents, risks, field verification, integrations, synchronization, and audit logging.
 
 ```bash
 DATABASE_URL="postgresql://bhoomisetu:bhoomisetu_dev@localhost:5433/bhoomisetu?schema=public" npm run prisma:validate
 DATABASE_URL="postgresql://bhoomisetu:bhoomisetu_dev@localhost:5433/bhoomisetu?schema=public" npm run prisma:generate
+DATABASE_URL="postgresql://bhoomisetu:bhoomisetu_dev@localhost:5433/bhoomisetu?schema=public" npm run prisma:seed
+```
+
+To recreate the database and seed synthetic demo data:
+
+```bash
+npm run prisma:migrate -- --name init
+npm run prisma:seed
 ```
 
 ## Project Layout
@@ -97,7 +121,9 @@ src/
     index.js             API route registration
     health.routes.js     Database/PostGIS health endpoint
 prisma/
-  schema.prisma          Initial Prisma configuration
+  schema.prisma          Canonical Phase 2 relational schema
+  seed.js                Synthetic demo data loader
+  migrations/             Versioned database migrations
 docker-compose.yml       Backend and PostgreSQL/PostGIS services
 Dockerfile               Backend image definition
 ```
