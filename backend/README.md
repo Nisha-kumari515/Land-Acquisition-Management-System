@@ -90,6 +90,23 @@ curl -X POST http://localhost:3000/api/projects/PROJECT_ID/impact-analysis \
   }'
 ```
 
+## Phase 5 Acquisition Workflow
+
+Acquisition stages advance in order: `PROPOSAL`, `SCRUTINY`, `SURVEY`, `NOTIFICATION`, `AWARD`, `COMPENSATION`, `POSSESSION`, `RR`, `COMPLETED`.
+
+- `GET /api/acquisition/:parcelId` returns all acquisition cases for a parcel, including stage history, award, and compensation records.
+- `PATCH /api/acquisition/:id/stage` changes one acquisition case stage. The request requires `newStage`, `changedById`, and an optional `remarks`.
+
+Example:
+
+```bash
+curl -X PATCH http://localhost:3000/api/acquisition/CASE_ID/stage \
+  -H "Content-Type: application/json" \
+  -d '{"newStage":"NOTIFICATION","changedById":"USER_ID","remarks":"Survey completed and notification prepared."}'
+```
+
+Invalid or skipped stages return `409 INVALID_STAGE_TRANSITION`. Every valid transition updates the case, its project-parcel stage, and creates an immutable history record.
+
 All successful responses use `{ success: true, data, message }`. Validation, duplicate, and missing-resource failures use a structured `{ success: false, error }` response. Authentication and RBAC will be added in a later phase; `createdById` is explicit until then.
 
 ## Run Everything With Docker
