@@ -52,6 +52,26 @@ npm start
 
 The API is available at `http://localhost:3000`.
 
+## Phase 3 APIs
+
+Parcel endpoints:
+
+- `GET /api/parcels?page=1&pageSize=20` lists parcels with optional `stateId`, `districtId`, `village`, and `ulpin` filters.
+- `GET /api/parcels/:id` returns one parcel with its geography and owners.
+- `POST /api/parcels` creates a parcel. Required fields: `stateId`, `districtId`, `village`, `area`, `sourceSystem`, and `sourceId`.
+- `PATCH /api/parcels/:id` updates parcel metadata.
+- `DELETE /api/parcels/:id` deletes a parcel that is not referenced by an acquisition project.
+
+Project endpoints:
+
+- `GET /api/projects?page=1&pageSize=20` lists projects with optional `stateId`, `districtId`, `status`, and `search` filters.
+- `GET /api/projects/:id` returns one project with geography, creator, and affected-parcel count.
+- `POST /api/projects` creates a project. Required fields: `code`, `name`, `department`, `stateId`, and `createdById`.
+- `PATCH /api/projects/:id` updates project metadata.
+- `DELETE /api/projects/:id` deletes a project and its project-parcel links.
+
+All successful responses use `{ success: true, data, message }`. Validation, duplicate, and missing-resource failures use a structured `{ success: false, error }` response. Authentication and RBAC will be added in a later phase; `createdById` is explicit until then.
+
 ## Run Everything With Docker
 
 ```bash
