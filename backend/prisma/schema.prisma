@@ -124,6 +124,7 @@ model Project {
   name           String
   description    String?
   department     String
+  projectType    String?
   stateId        String
   districtId     String?
   status         ProjectStatus            @default(PROPOSED)
@@ -143,6 +144,7 @@ model Project {
   @@index([stateId])
   @@index([districtId])
   @@index([status])
+  @@index([projectType])
 }
 
 model Parcel {
@@ -176,6 +178,10 @@ model Parcel {
   @@index([stateId])
   @@index([districtId])
   @@index([village])
+  @@index([circle])
+  @@index([sourceSystem])
+  @@index([dagNo])
+  @@index([pattaNo])
 }
 
 model ParcelOwner {
@@ -190,6 +196,7 @@ model ParcelOwner {
   updatedAt    DateTime @updatedAt
 
   @@index([parcelId])
+  @@index([name])
 }
 
 model ProjectParcel {
@@ -216,6 +223,7 @@ model ProjectParcel {
   @@index([parcelId])
   @@index([acquisitionStage])
   @@index([riskLevel])
+  @@index([compensationStatus])
 }
 
 model AcquisitionCase {

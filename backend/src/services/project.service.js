@@ -2,6 +2,9 @@ import { prisma } from '../config/database.js';
 import { AppError } from '../utils/response.js';
 import { getPagination, paginatedResponse } from '../utils/pagination.js';
 
+const projectStatuses = new Set(['PROPOSED', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'CANCELLED']);
+const riskLevels = new Set(['LOW', 'MEDIUM', 'HIGH']);
+
 const projectInclude = {
     state: { select: { id: true, code: true, name: true } },
     district: { select: { id: true, code: true, name: true } },
@@ -15,6 +18,7 @@ function projectData(input) {
         name: input.name,
         description: input.description ?? null,
         department: input.department,
+        projectType: input.projectType ?? null,
         stateId: input.stateId,
         districtId: input.districtId ?? null,
         status: input.status ?? undefined,
@@ -41,11 +45,18 @@ async function assertCreator(createdById) {
 }
 
 export async function listProjects(query) {
+    if (query.status && !projectStatuses.has(query.status)) throw new AppError(400, 'VALIDATION_ERROR', 'status is invalid');
+    if (query.riskLevel && !riskLevels.has(query.riskLevel)) throw new AppError(400, 'VALIDATION_ERROR', 'riskLevel is invalid');
     const { page, pageSize, skip, take } = getPagination(query);
     const where = {
         ...(query.stateId ? { stateId: query.stateId } : {}),
+        ...(query.state ? { state: { OR: [{ id: query.state }, { code: query.state }, { name: { contains: query.state, mode: 'insensitive' } }] } } : {}),
         ...(query.districtId ? { districtId: query.districtId } : {}),
+        ...(query.district ? { district: { OR: [{ id: query.district }, { code: query.district }, { name: { contains: query.district, mode: 'insensitive' } }] } } : {}),
         ...(query.status ? { status: query.status } : {}),
+        ...(query.department ? { department: { contains: query.department, mode: 'insensitive' } } : {}),
+        ...(query.projectType ? { projectType: { contains: query.projectType, mode: 'insensitive' } } : {}),
+        ...(query.riskLevel ? { projectParcels: { some: { riskLevel: query.riskLevel } } } : {}),
         ...(query.search ? {
             OR: [
                 { code: { contains: query.search, mode: 'insensitive' } },
