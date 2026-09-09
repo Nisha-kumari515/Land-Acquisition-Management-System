@@ -126,6 +126,72 @@ Supported statuses are `PENDING`, `ASSESSED`, `APPROVED`, `PARTIALLY_PAID`, `PAI
 
 Family writes synchronize the project-parcel `rrStatus`. Entitlement amounts cannot be negative.
 
+## Phase 8 Explainable Risk Engine
+
+- `GET /api/risks` lists persisted risk alerts, with optional filters for `projectId`, `projectParcelId`, and `level`.
+- `GET /api/risks/projects/:projectId` returns the project-level risk summary and per-parcel evaluation with score, level, reasons, and recommended action.
+- `POST /api/risks/evaluate` evaluates a parcel using `{ "projectParcelId": "..." }`.
+- `POST /api/risks/project-parcels/:projectParcelId/evaluate` evaluates a single project-parcel relationship via URL parameter.
+
+The deterministic risk model uses explainable business rules:
+
+- compensation pending for more than 60 days → HIGH contribution
+- multiple ownership records → MEDIUM contribution
+- acquisition milestone overdue beyond 90 days → HIGH contribution
+- pending RR or objection review → MEDIUM/HIGH contribution
+- reasons are returned as plain strings and are stored in the `RiskAlert.reasons` JSON field
+
+Risk scores are normalized to 0-100, mapped to `LOW`, `MEDIUM`, or `HIGH`, and saved back to the parcel’s `riskLevel` field and the `RiskAlert` table.
+
+## Phase 9 Dashboard APIs
+
+- `GET /api/dashboard/overview` returns high-level portfolio metrics: total projects, active projects, parcel counts, pending compensation/RR, and high-risk alert totals.
+- `GET /api/dashboard/projects` returns a project summary with parcel counts, stage mix, and risk distribution across project parcels.
+
+These endpoints are designed for executive monitoring and provide a lightweight, deterministic operational snapshot without requiring a separate analytics service.
+
+## Phase 10 Assam Integration Architecture
+
+- `GET /api/integrations` lists registered external data sources.
+- `GET /api/integrations/:id` returns one integration with its recent sync history.
+- `POST /api/integrations` creates a source registration using `name` and optional `description`.
+- `GET /api/integrations/:id/sync-logs` lists recent sync events for a configured source.
+- `POST /api/integrations/:id/sync` records a sync execution event and captures the source snapshot metadata.
+
+The design is intentionally simple and explainable: integration metadata sits in `DataSource`, synchronization execution sits in `SyncLog`, and the application remains decoupled from vendor-specific connectors until a later phase introduces edge adapters or webhooks.
+
+## Phase 11 Authentication & RBAC
+
+- `POST /api/auth/login` authenticates a seeded demo user and returns a JWT.
+- `GET /api/auth/me` returns the currently authenticated user profile using the bearer token.
+- `requireAuth` validates the JWT on protected routes.
+- `requireRole(...)` enforces role-based access checks for future admin/field/finance workflows.
+
+The seeded demo credentials are:
+
+- `admin@bhoomisetu.demo` / `demo-admin-password`
+- `kamrup.officer@bhoomisetu.demo` / `demo-officer-password`
+- `field.assam@bhoomisetu.demo` / `demo-field-password`
+
+This is a lightweight, prototype-level auth layer built for the hackathon flow and is not a production-grade identity provider.
+
+## Phase 12 Audit Middleware
+
+- `GET /api/audit` lists audit entries, with optional `entity`, `userId`, and `limit` filters.
+- `GET /api/audit/:entity/:entityId` fetches the log trail for a given entity record.
+- Request-level actions are automatically logged by middleware for API calls, including method, path, status, elapsed time, and request payload metadata.
+- Audit events are stored in the `AuditLog` table so the application remains traceable for key workflow actions.
+
+This phase provides transparent operational traceability without introducing a separate event bus or analytics pipeline.
+
+## Phase 13 Automated Tests & API Documentation
+
+- `npm run test:api` runs a lightweight smoke test suite that validates health, login, and docs endpoints.
+- `GET /api/docs` exposes a machine-readable endpoint catalog for the implemented BHOOMISETU API surface.
+- The smoke tests launch the backend on a temporary port, run a few real requests, and assert expected responses.
+
+This phase gives the prototype a reliable verification path while keeping the implementation lightweight and easy to extend.
+
 All successful responses use `{ success: true, data, message }`. Validation, duplicate, and missing-resource failures use a structured `{ success: false, error }` response. Authentication and RBAC will be added in a later phase; `createdById` is explicit until then.
 
 ## Run Everything With Docker

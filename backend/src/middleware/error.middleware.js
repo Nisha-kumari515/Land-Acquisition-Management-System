@@ -23,7 +23,9 @@ export function errorHandler(error, _request, response, _next) {
     success: false,
     error: {
       code,
-      message
+      message,
+      ...(error.dataStatus ? { dataStatus: error.dataStatus } : {}),
+      ...(error.syncStatus ? { syncStatus: error.syncStatus } : {})
     }
   });
 }

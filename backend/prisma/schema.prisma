@@ -156,8 +156,13 @@ model Parcel {
   ulpin              String?                  @unique
   area               Decimal                  @db.Decimal(14, 4)
   geometry           Unsupported("geometry")?
+  dataOrigin         String                   @default("DEMO")
   sourceSystem       String
   sourceId           String
+  sourceUpdatedAt    DateTime?
+  lastSyncedAt       DateTime?
+  rawSourceMetadata  Json?
+  rawSourcePayload   Json?
   state              State                    @relation(fields: [stateId], references: [id])
   district           District                 @relation(fields: [districtId], references: [id])
   owners             ParcelOwner[]
@@ -377,6 +382,10 @@ model SyncLog {
   status         String
   recordsRead    Int        @default(0)
   recordsWritten Int        @default(0)
+  recordsInserted Int       @default(0)
+  recordsUpdated  Int       @default(0)
+  recordsRejected Int       @default(0)
+  recordsFailed   Int       @default(0)
   errorMessage   String?
   rawSnapshotRef String?
   dataSource     DataSource @relation(fields: [dataSourceId], references: [id])
