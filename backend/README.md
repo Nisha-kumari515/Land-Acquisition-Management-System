@@ -107,6 +107,14 @@ curl -X PATCH http://localhost:3000/api/acquisition/CASE_ID/stage \
 
 Invalid or skipped stages return `409 INVALID_STAGE_TRANSITION`. Every valid transition updates the case, its project-parcel stage, and creates an immutable history record.
 
+## Phase 6 Compensation
+
+- `GET /api/compensation/:acquisitionCaseId` returns the compensation record for an acquisition case.
+- `POST /api/compensation/:acquisitionCaseId` creates a record with `assessedAmount`, optional `approvedAmount`, `paidAmount`, `status`, and dates.
+- `PATCH /api/compensation/:acquisitionCaseId` updates compensation amounts, status, and dates.
+
+Supported statuses are `PENDING`, `ASSESSED`, `APPROVED`, `PARTIALLY_PAID`, `PAID`, and `ON_HOLD`. Amounts cannot be negative, paid amount cannot exceed the approved or assessed amount, and the project-parcel compensation status is synchronized on every write.
+
 All successful responses use `{ success: true, data, message }`. Validation, duplicate, and missing-resource failures use a structured `{ success: false, error }` response. Authentication and RBAC will be added in a later phase; `createdById` is explicit until then.
 
 ## Run Everything With Docker
