@@ -12,6 +12,8 @@ import integrationRoutes from './integration.routes.js';
 import authRoutes from './auth.routes.js';
 import auditRoutes from './audit.routes.js';
 import docsRoutes from './docs.routes.js';
+import notificationRoutes from './notification.routes.js';
+import documentRoutes from './document.routes.js';
 
 const router = Router();
 
@@ -19,6 +21,8 @@ router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
 router.use('/audit', auditRoutes);
 router.use('/docs', docsRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/documents', documentRoutes);
 router.use('/parcels', parcelRoutes);
 router.use('/projects', projectRoutes);
 router.use('/', gisRoutes);

@@ -21,7 +21,13 @@ export function getApiDocs() {
             { method: 'GET', path: '/api/integrations/sync-logs', summary: 'Sanitized synchronization history' },
             { method: 'GET', path: '/api/integrations/sync-logs/:id', summary: 'Synchronization log detail' },
             { method: 'POST', path: '/api/integrations/assam/sync', summary: 'Synchronize an Assam BhuNaksha parcel' },
-            { method: 'GET', path: '/api/audit', summary: 'Audit log list' }
+            { method: 'GET', path: '/api/audit', summary: 'Audit log list' },
+            { method: 'GET', path: '/api/notifications', summary: 'In-app notification list' },
+            { method: 'GET', path: '/api/notifications/unread', summary: 'Unread in-app notifications' },
+            { method: 'PATCH', path: '/api/notifications/:id/read', summary: 'Mark notification as read' },
+            { method: 'PATCH', path: '/api/notifications/read-all', summary: 'Mark all notifications as read' },
+            { method: 'GET', path: '/api/documents/:id/versions', summary: 'Document version history' },
+            { method: 'POST', path: '/api/documents/:id/version', summary: 'Create document version' },
         ]
     };
 }

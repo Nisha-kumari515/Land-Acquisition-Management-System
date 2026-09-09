@@ -1,5 +1,5 @@
 import * as acquisitionService from '../services/acquisition.service.js';
-import { sendSuccess } from '../utils/response.js';
+import { AppError, sendSuccess } from '../utils/response.js';
 
 export async function getByParcel(request, response, next) {
     try {
@@ -11,9 +11,15 @@ export async function getByParcel(request, response, next) {
 
 export async function changeStage(request, response, next) {
     try {
+        if (request.body.changedById && request.body.changedById !== request.user.sub) {
+            return next(new AppError(403, 'FORBIDDEN', 'The authenticated user must perform the stage transition'));
+        }
         return sendSuccess(
             response,
-            await acquisitionService.transitionStage(request.params.id, request.body),
+            await acquisitionService.transitionStage(request.params.id, {
+                ...request.body,
+                changedById: request.user.sub
+            }),
             'Acquisition stage changed'
         );
     } catch (error) {

@@ -81,6 +81,7 @@ model User {
   createdProjects    Project[]                 @relation("ProjectCreator")
   stageChanges       AcquisitionStageHistory[]
   uploadedDocuments  Document[]                @relation("DocumentUploader")
+  uploadedDocumentVersions DocumentVersion[]
   auditLogs          AuditLog[]
   fieldVerifications FieldVerification[]
   createdAt          DateTime                  @default(now())
@@ -137,6 +138,7 @@ model Project {
   createdBy      User                     @relation("ProjectCreator", fields: [createdById], references: [id])
   projectParcels ProjectParcel[]
   documents      Document[]
+  notifications  Notification[] @relation("ProjectNotifications")
   riskAlerts     RiskAlert[]
   createdAt      DateTime                 @default(now())
   updatedAt      DateTime                 @updatedAt
@@ -171,6 +173,7 @@ model Parcel {
   projectParcels     ProjectParcel[]
   documents          Document[]
   fieldVerifications FieldVerification[]
+  notifications      Notification[]
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
 
@@ -257,14 +260,31 @@ model AcquisitionStageHistory {
 
 model Notification {
   id                String          @id @default(cuid())
-  acquisitionCaseId String
-  notificationNo    String
-  notificationDate  DateTime
+  acquisitionCaseId String?
+  notificationNo    String?
+  notificationDate  DateTime?
   publicationDate   DateTime?
-  acquisitionCase   AcquisitionCase @relation(fields: [acquisitionCaseId], references: [id], onDelete: Cascade)
+  type              String          @default("STATUTORY_NOTICE")
+  title             String?
+  message           String?
+  eventKey          String?         @unique
+  readAt            DateTime?
+  projectId         String?
+  parcelId          String?
+  riskAlertId       String?
+  syncLogId         String?
+  acquisitionCase   AcquisitionCase? @relation(fields: [acquisitionCaseId], references: [id], onDelete: Cascade)
+  project           Project?        @relation("ProjectNotifications", fields: [projectId], references: [id], onDelete: Cascade)
+  parcel            Parcel?         @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+  riskAlert         RiskAlert?      @relation(fields: [riskAlertId], references: [id], onDelete: Cascade)
+  syncLog           SyncLog?        @relation(fields: [syncLogId], references: [id], onDelete: Cascade)
   createdAt         DateTime        @default(now())
 
   @@index([acquisitionCaseId])
+  @@index([readAt])
+  @@index([type])
+  @@index([projectId])
+  @@index([parcelId])
 }
 
 model Award {
@@ -335,10 +355,26 @@ model Document {
   project      Project? @relation(fields: [projectId], references: [id])
   parcel       Parcel?  @relation(fields: [parcelId], references: [id])
   uploadedBy   User     @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  versions     DocumentVersion[]
   createdAt    DateTime @default(now())
 
   @@index([projectId])
   @@index([parcelId])
+}
+
+model DocumentVersion {
+  id              String   @id @default(cuid())
+  documentId      String
+  version         Int
+  storageReference String
+  uploadedById    String
+  uploadedAt      DateTime @default(now())
+  changeReason    String?
+  isCurrent       Boolean  @default(false)
+  document        Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  uploadedBy      User     @relation(fields: [uploadedById], references: [id])
+  @@unique([documentId, version])
+  @@index([documentId, isCurrent])
 }
 
 model RiskAlert {
@@ -352,6 +388,7 @@ model RiskAlert {
   resolvedAt        DateTime?
   project           Project?       @relation(fields: [projectId], references: [id])
   projectParcel     ProjectParcel? @relation(fields: [projectParcelId], references: [id])
+  notifications     Notification[]
   createdAt         DateTime       @default(now())
 
   @@index([projectId])
@@ -397,6 +434,7 @@ model SyncLog {
   errorMessage   String?
   rawSnapshotRef String?
   dataSource     DataSource @relation(fields: [dataSourceId], references: [id])
+  notifications  Notification[]
   createdAt      DateTime   @default(now())
 
   @@index([dataSourceId])
