@@ -70,6 +70,26 @@ Project endpoints:
 - `PATCH /api/projects/:id` updates project metadata.
 - `DELETE /api/projects/:id` deletes a project and its project-parcel links.
 
+GIS impact analysis:
+
+- `POST /api/projects/:projectId/impact-analysis` accepts `{ "srid": 32646, "geometry": { ...GeoJSON Polygon or MultiPolygon... } }`.
+- The endpoint validates the geometry and SRID, stores the project geometry, finds intersecting parcels with PostGIS, calculates affected area and percentage, and upserts project-parcel impact metrics.
+- The current synthetic Assam seed data uses projected SRID `32646`; this is a prototype source CRS, not a national CRS assumption.
+
+Example impact request using the seeded Assam geometry:
+
+```bash
+curl -X POST http://localhost:3000/api/projects/PROJECT_ID/impact-analysis \
+  -H "Content-Type: application/json" \
+  -d '{
+    "srid": 32646,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[[599800,2799700],[601600,2799700],[601600,2801200],[599800,2801200],[599800,2799700]]]
+    }
+  }'
+```
+
 All successful responses use `{ success: true, data, message }`. Validation, duplicate, and missing-resource failures use a structured `{ success: false, error }` response. Authentication and RBAC will be added in a later phase; `createdById` is explicit until then.
 
 ## Run Everything With Docker
