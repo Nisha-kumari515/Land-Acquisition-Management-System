@@ -5,6 +5,7 @@ import projectRoutes from './project.routes.js';
 import gisRoutes from './gis.routes.js';
 import acquisitionRoutes from './acquisition.routes.js';
 import compensationRoutes from './compensation.routes.js';
+import rrRoutes from './rr.routes.js';
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use('/projects', projectRoutes);
 router.use('/', gisRoutes);
 router.use('/acquisition', acquisitionRoutes);
 router.use('/compensation', compensationRoutes);
+router.use('/rr', rrRoutes);
 
 export default router;

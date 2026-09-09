@@ -115,6 +115,17 @@ Invalid or skipped stages return `409 INVALID_STAGE_TRANSITION`. Every valid tra
 
 Supported statuses are `PENDING`, `ASSESSED`, `APPROVED`, `PARTIALLY_PAID`, `PAID`, and `ON_HOLD`. Amounts cannot be negative, paid amount cannot exceed the approved or assessed amount, and the project-parcel compensation status is synchronized on every write.
 
+## Phase 7 Rehabilitation & Resettlement
+
+- `GET /api/rr/families` lists families with optional `projectParcelId`, `status`, and `eligible` filters.
+- `GET /api/rr/families/:id` returns one family with its entitlements and parcel context.
+- `POST /api/rr/families` creates a family using `projectParcelId`, `familyReference`, and `membersCount`.
+- `PATCH /api/rr/families/:id` updates eligibility, status, member count, and `resettlementProgress` from 0 to 100.
+- `POST /api/rr/families/:familyId/entitlements` creates an entitlement.
+- `PATCH /api/rr/entitlements/:id` updates an entitlement amount or status.
+
+Family writes synchronize the project-parcel `rrStatus`. Entitlement amounts cannot be negative.
+
 All successful responses use `{ success: true, data, message }`. Validation, duplicate, and missing-resource failures use a structured `{ success: false, error }` response. Authentication and RBAC will be added in a later phase; `createdById` is explicit until then.
 
 ## Run Everything With Docker
