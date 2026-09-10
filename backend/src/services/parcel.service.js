@@ -158,6 +158,36 @@ export async function getParcelIntelligence(id) {
     };
 }
 
+export async function getParcelSource(id) {
+    const parcel = await prisma.parcel.findUnique({
+        where: { id },
+        select: { sourceSystem: true, sourceId: true, updatedAt: true }
+    });
+
+    if (!parcel) throw new AppError(404, 'PARCEL_NOT_FOUND', 'Parcel not found');
+
+    return {
+        sourceSystem: parcel.sourceSystem || 'MANUAL',
+        sourceId: parcel.sourceId || null,
+        dataOrigin: parcel.sourceSystem ? 'OFFICIAL_API' : 'USER_INPUT',
+        lastSyncedAt: parcel.updatedAt
+    };
+}
+
+export async function getParcelSourceHistory(id) {
+    const parcel = await getParcelSource(id);
+    const syncLogs = await prisma.syncLog.findMany({
+        where: { recordId: id },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, status: true, message: true, createdAt: true }
+    });
+
+    return {
+        ...parcel,
+        syncHistory: syncLogs
+    };
+}
+
 export async function deleteParcel(id) {
     await getParcel(id);
     return prisma.parcel.delete({ where: { id } });

@@ -24,8 +24,9 @@ app.use(cors({
     },
     credentials: true,
 }));
+import { globalLimiter } from './middleware/rate-limit.middleware.js';
 app.use(express.json({ limit: '100kb' }));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 100 }));
+app.use(globalLimiter);
 app.use((request, _response, next) => {
     const startTime = Date.now();
     const originalJson = _response.json.bind(_response);

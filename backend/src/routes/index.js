@@ -18,8 +18,10 @@ import fieldVerificationRoutes from './field-verification.routes.js';
 
 const router = Router();
 
+import { authLimiter, searchLimiter, gisLimiter, integrationLimiter } from '../middleware/rate-limit.middleware.js';
+
 router.use('/health', healthRoutes);
-router.use('/auth', authRoutes);
+router.use('/auth', authLimiter, authRoutes);
 router.use('/audit', auditRoutes);
 router.use('/docs', docsRoutes);
 router.use('/notifications', notificationRoutes);
@@ -27,12 +29,19 @@ router.use('/documents', documentRoutes);
 router.use('/field-verifications', fieldVerificationRoutes);
 router.use('/parcels', parcelRoutes);
 router.use('/projects', projectRoutes);
-router.use('/', gisRoutes);
+router.use('/', gisLimiter, gisRoutes);
 router.use('/acquisition', acquisitionRoutes);
 router.use('/compensation', compensationRoutes);
 router.use('/rr', rrRoutes);
 router.use('/risks', riskRoutes);
 router.use('/dashboard', dashboardRoutes);
-router.use('/integrations', integrationRoutes);
+router.use('/integrations', integrationLimiter, integrationRoutes);
 
+import searchRoutes from './search.routes.js';
+import mapRoutes from './map.routes.js';
+import dataQualityRoutes from './data-quality.routes.js';
+
+router.use('/search', searchLimiter, searchRoutes);
+router.use('/map', gisLimiter, mapRoutes);
+router.use('/data-quality', dataQualityRoutes);
 export default router;
