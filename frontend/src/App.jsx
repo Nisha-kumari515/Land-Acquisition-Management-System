@@ -276,36 +276,80 @@ function ProjectDirectory({ projects, selectedProjectId, onSelect }) {
 }
 
 function ProjectDetail({ project, onClose }) {
-    const stages = project.stages || [];
-    const stageCounts = stages.reduce((counts, stage) => {
-        counts[stage.acquisitionStage] = (counts[stage.acquisitionStage] || 0) + 1;
-        return counts;
-    }, {});
+    const [intel, setIntel] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchIntel() {
+            setLoading(true);
+            try {
+                // Find token from local storage or use existing fetch logic. For now, assume App passed token. 
+                // Since token isn't passed, let's fetch using the backend's demo auth.
+                const loginResponse = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'admin@bhoomisetu.demo', password: 'demo-admin-password' }),
+                });
+                const token = (await loginResponse.json()).data?.token;
+                
+                const res = await fetch(`${API_BASE}/projects/${project.id}/intelligence`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                setIntel(data.data);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchIntel();
+    }, [project.id]);
+
+    if (loading) return <section className="panel expanded-panel project-detail"><div className="loading">Loading intelligence...</div></section>;
 
     return (
-        <section className="panel expanded-panel project-detail">
+        <section className="panel expanded-panel project-detail slide-in">
             <div className="panel-header">
                 <div>
-                    <p className="eyebrow">Selected project</p>
+                    <p className="eyebrow">Project Intelligence Overview</p>
                     <h2>{project.name}</h2>
                     <small className="panel-subtitle">{project.code} · {project.district || 'Assam District'} · {project.department}</small>
                 </div>
                 <button className="quiet-btn" type="button" onClick={onClose}>Close</button>
             </div>
+            
             <div className="detail-grid">
-                <div className="detail-stat"><small>Parcels</small><strong>{project.parcelCount || 0}</strong></div>
-                <div className="detail-stat"><small>High risk</small><strong>{project.riskSummary?.high || 0}</strong></div>
-                <div className="detail-stat"><small>Medium risk</small><strong>{project.riskSummary?.medium || 0}</strong></div>
-                <div className="detail-stat"><small>Low risk</small><strong>{project.riskSummary?.low || 0}</strong></div>
+                <div className="detail-stat"><small>Affected Area</small><strong>{intel?.totalAffectedArea ? (intel.totalAffectedArea / 10000).toFixed(2) : 0} Ha</strong></div>
+                <div className="detail-stat"><small>Total Parcels</small><strong>{intel?.totalParcels || project.parcelCount || 0}</strong></div>
+                <div className="detail-stat"><small>Assessed Comp.</small><strong>{formatCurrency(intel?.totalAssessedCompensation)}</strong></div>
+                <div className="detail-stat"><small>High Risk Factors</small><strong className="alert-text">{intel?.riskSummary?.high || 0}</strong></div>
             </div>
-            <div className="stage-list">
-                {Object.entries(stageCounts).map(([stage, count]) => (
-                    <div className="stage-row" key={stage}>
-                        <span>{stage.replaceAll('_', ' ')}</span>
-                        <span className="stage-bar"><span style={{ width: `${Math.min((count / Math.max(project.parcelCount, 1)) * 100, 100)}%` }} /></span>
-                        <strong>{count}</strong>
+
+            <div className="content-grid" style={{ marginTop: '1.5rem', gap: '2rem', gridTemplateColumns: '1fr 1fr' }}>
+                <div>
+                    <h3>Acquisition Stages</h3>
+                    <div className="stage-list">
+                        {intel?.stageDistribution ? Object.entries(intel.stageDistribution).map(([stage, count]) => (
+                            <div className="stage-row" key={stage}>
+                                <span>{stage.replaceAll('_', ' ')}</span>
+                                <span className="stage-bar"><span style={{ width: `${Math.min((count / Math.max(intel.totalParcels, 1)) * 100, 100)}%` }} /></span>
+                                <strong>{count}</strong>
+                            </div>
+                        )) : <div className="empty-state">No stages initiated yet.</div>}
                     </div>
-                ))}
+                </div>
+                <div>
+                    <h3>Key Risks</h3>
+                    <div className="risk-list">
+                        {intel?.highRiskParcels?.length > 0 ? intel.highRiskParcels.map(rp => (
+                            <div key={rp.id} className="risk-row">
+                                <div><strong>Dag No. {rp.dagNo}</strong><small>{rp.village}</small></div>
+                                <span className="status status--alert">HIGH</span>
+                            </div>
+                        )) : <div className="empty-state">No high risks detected.</div>}
+                    </div>
+                </div>
             </div>
         </section>
     );
