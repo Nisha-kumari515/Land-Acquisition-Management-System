@@ -49,11 +49,11 @@ test.after(async () => {
 });
 
 test('health endpoint is available', async () => {
-    const response = await fetch(`http://localhost:${TEST_PORT}/api/health`);
-    const body = await response.json();
-    assert.equal(response.status, 200);
+    const res = await fetch(`http://localhost:${TEST_PORT}/api/health`);
+    assert.equal(res.status, 200);
+    const body = await res.json();
     assert.equal(body.success, true);
-    assert.equal(body.database, 'connected');
+    assert.equal(body.services.database, 'UP');
 });
 
 test('login returns a JWT for seeded admin user', async () => {

@@ -33,6 +33,15 @@ export async function update(request, response, next) {
     }
 }
 
+export async function getParcelIntelligence(request, response, next) {
+    try {
+        const data = await parcelService.getParcelIntelligence(request.params.id);
+        return sendSuccess(response, data, 'Parcel intelligence retrieved successfully');
+    } catch (error) {
+        return next(error);
+    }
+}
+
 export async function remove(request, response, next) {
     try {
         await parcelService.deleteParcel(request.params.id);

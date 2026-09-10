@@ -6,10 +6,14 @@ import { env } from './config/env.js';
 import { prisma } from './config/database.js';
 import apiRoutes from './routes/index.js';
 import { errorHandler } from './middleware/error.middleware.js';
+import { AppError } from './utils/response.js';
 
 export const app = express();
 
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: env.nodeEnv === 'production' ? undefined : false,
+    crossOriginEmbedderPolicy: false
+}));
 app.use(cors({
     origin: (requestOrigin, callback) => {
         if (!requestOrigin || env.corsOrigin.includes(requestOrigin)) {
@@ -20,8 +24,8 @@ app.use(cors({
     },
     credentials: true,
 }));
-app.use(express.json({ limit: '1mb' }));
-app.use(rateLimit({ windowMs: 60 * 1000, limit: 100 }));
+app.use(express.json({ limit: '100kb' }));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 100 }));
 app.use((request, _response, next) => {
     const startTime = Date.now();
     const originalJson = _response.json.bind(_response);
@@ -29,6 +33,13 @@ app.use((request, _response, next) => {
     _response.json = (body) => {
         const elapsedMs = Date.now() - startTime;
         if (request.path.startsWith('/api') && request.path !== '/api/health' && request.method !== 'OPTIONS') {
+            
+            let safeBody = null;
+            if (request.method !== 'GET' && request.body) {
+                safeBody = { ...request.body };
+                if (safeBody.password) safeBody.password = '[REDACTED]';
+            }
+
             prisma.auditLog.create({
                 data: {
                     userId: request.user?.sub ?? null,
@@ -38,10 +49,10 @@ app.use((request, _response, next) => {
                     previousValue: { statusCode: _response.statusCode, elapsedMs },
                     newValue: {
                         query: request.query,
-                        body: request.method === 'GET' ? null : request.body
+                        body: safeBody
                     }
                 }
-            }).catch((error) => console.error('Audit logging failed:', error));
+            }).catch((error) => console.error('Audit logging failed:', error.message));
         }
 
         return originalJson(body);
@@ -51,4 +62,9 @@ app.use((request, _response, next) => {
 });
 
 app.use('/api', apiRoutes);
+
+app.use((_req, _res, next) => {
+    next(new AppError(404, 'NOT_FOUND', 'Endpoint not found'));
+});
+
 app.use(errorHandler);

@@ -9,6 +9,7 @@ router.use(requireAuth);
 
 router.get('/', projectController.list);
 router.get('/:id', projectController.getById);
+router.get('/:id/intelligence', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER'), projectController.getProjectIntelligence);
 router.post('/', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER'), validateBody(['code', 'name', 'department', 'stateId', 'createdById']), projectController.create);
 router.patch('/:id', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER'), projectController.update);
 router.delete('/:id', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER'), projectController.remove);

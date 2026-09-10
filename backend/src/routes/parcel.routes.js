@@ -9,6 +9,7 @@ router.use(requireAuth);
 
 router.get('/', parcelController.list);
 router.get('/:id', parcelController.getById);
+router.get('/:id/intelligence', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER'), parcelController.getParcelIntelligence);
 router.post('/', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FIELD_OFFICER'), validateBody(['stateId', 'districtId', 'village', 'area', 'sourceSystem', 'sourceId']), validatePositiveNumber('area'), parcelController.create);
 router.patch('/:id', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FIELD_OFFICER'), parcelController.update);
 router.delete('/:id', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER'), parcelController.remove);

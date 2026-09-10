@@ -16,6 +16,8 @@ export function getApiDocs() {
             { method: 'GET', path: '/api/rr/families', summary: 'R&R family list' },
             { method: 'GET', path: '/api/risks', summary: 'Risk alert list' },
             { method: 'GET', path: '/api/dashboard/overview', summary: 'Executive summary' },
+            { method: 'GET', path: '/api/dashboard/analytics', summary: 'Advanced aggregated analytics' },
+            { method: 'GET', path: '/api/field-verifications', summary: 'Field verification list' },
             { method: 'GET', path: '/api/integrations', summary: 'Integration catalog' },
             { method: 'GET', path: '/api/integrations/assam/status', summary: 'Assam source freshness and connection status' },
             { method: 'GET', path: '/api/integrations/sync-logs', summary: 'Sanitized synchronization history' },

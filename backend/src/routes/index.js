@@ -14,6 +14,7 @@ import auditRoutes from './audit.routes.js';
 import docsRoutes from './docs.routes.js';
 import notificationRoutes from './notification.routes.js';
 import documentRoutes from './document.routes.js';
+import fieldVerificationRoutes from './field-verification.routes.js';
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.use('/audit', auditRoutes);
 router.use('/docs', docsRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/documents', documentRoutes);
+router.use('/field-verifications', fieldVerificationRoutes);
 router.use('/parcels', parcelRoutes);
 router.use('/projects', projectRoutes);
 router.use('/', gisRoutes);

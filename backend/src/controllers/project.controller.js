@@ -33,6 +33,15 @@ export async function update(request, response, next) {
     }
 }
 
+export async function getProjectIntelligence(request, response, next) {
+    try {
+        const data = await projectService.getProjectIntelligence(request.params.id);
+        return sendSuccess(response, data, 'Project intelligence retrieved successfully');
+    } catch (error) {
+        return next(error);
+    }
+}
+
 export async function remove(request, response, next) {
     try {
         await projectService.deleteProject(request.params.id);

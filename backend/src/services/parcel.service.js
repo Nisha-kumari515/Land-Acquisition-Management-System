@@ -106,6 +106,58 @@ export async function updateParcel(id, input) {
     });
 }
 
+export async function getParcelIntelligence(id) {
+    const parcel = await prisma.parcel.findUnique({
+        where: { id },
+        include: {
+            state: { select: { name: true, code: true } },
+            district: { select: { name: true, code: true } },
+            owners: true,
+            documents: true,
+            fieldVerifications: { orderBy: { createdAt: 'desc' }, take: 1 },
+            projectParcels: {
+                include: {
+                    project: { select: { name: true, code: true, department: true } },
+                    riskAlerts: { orderBy: { score: 'desc' } },
+                    acquisitionCase: {
+                        include: { compensation: true }
+                    },
+                    rrFamilies: true
+                }
+            }
+        }
+    });
+
+    if (!parcel) throw new AppError(404, 'PARCEL_NOT_FOUND', 'Parcel not found');
+
+    const geometry = await prisma.$queryRaw`SELECT ST_AsGeoJSON(geometry)::json AS geojson FROM "Parcel" WHERE id = ${id}`;
+
+    return {
+        parcel: {
+            id: parcel.id,
+            ulpin: parcel.ulpin,
+            village: parcel.village,
+            area: parcel.area,
+            sourceSystem: parcel.sourceSystem
+        },
+        geometry: geometry[0]?.geojson || null,
+        ownership: parcel.owners,
+        projects: parcel.projectParcels.map((pp) => ({
+            id: pp.id,
+            project: pp.project,
+            acquisitionStage: pp.acquisitionStage,
+            compensationStatus: pp.compensationStatus,
+            riskLevel: pp.riskLevel,
+            risks: pp.riskAlerts,
+            compensation: pp.acquisitionCase?.compensation || null,
+            rr: pp.rrFamilies
+        })),
+        fieldVerification: parcel.fieldVerifications[0] || null,
+        documents: parcel.documents,
+        dataFreshness: { lastSyncedAt: parcel.updatedAt }
+    };
+}
+
 export async function deleteParcel(id) {
     await getParcel(id);
     return prisma.parcel.delete({ where: { id } });

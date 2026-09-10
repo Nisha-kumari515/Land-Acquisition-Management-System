@@ -81,9 +81,12 @@ export async function getOverview() {
     };
 }
 
-export async function getProjectSummary() {
+export async function getProjectSummary(page = 1, limit = 50) {
+    const skip = (page - 1) * limit;
     const projects = await prisma.project.findMany({
         orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
         include: {
             district: { select: { name: true } },
             _count: { select: { projectParcels: true } },

@@ -10,7 +10,7 @@ export function requireAuth(request, _response, next) {
 
     const token = authHeader.replace('Bearer ', '');
     try {
-        const decoded = jwt.verify(token, env.jwtSecret);
+        const decoded = jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'] });
         request.user = decoded;
         return next();
     } catch (_error) {

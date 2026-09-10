@@ -99,6 +99,45 @@ export async function updateProject(id, input) {
     });
 }
 
+export async function getProjectIntelligence(id) {
+    const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+            state: { select: { name: true, code: true } },
+            district: { select: { name: true, code: true } },
+            _count: { select: { projectParcels: true } }
+        }
+    });
+
+    if (!project) throw new AppError(404, 'PROJECT_NOT_FOUND', 'Project not found');
+
+    const [impact, stageDistribution, risks, geometry] = await Promise.all([
+        prisma.$queryRaw`SELECT COUNT(id)::int AS count, COALESCE(SUM("affectedArea"), 0)::text AS area FROM "ProjectParcel" WHERE "projectId" = ${id}`,
+        prisma.$queryRaw`SELECT "acquisitionStage"::text AS stage, COUNT(*)::int AS count FROM "ProjectParcel" WHERE "projectId" = ${id} GROUP BY "acquisitionStage" ORDER BY count DESC`,
+        prisma.$queryRaw`SELECT "riskLevel"::text AS level, COUNT(*)::int AS count FROM "ProjectParcel" WHERE "projectId" = ${id} GROUP BY "riskLevel" ORDER BY count DESC`,
+        prisma.$queryRaw`SELECT ST_AsGeoJSON(geometry)::json AS geojson FROM "Project" WHERE id = ${id}`
+    ]);
+
+    return {
+        project: {
+            id: project.id,
+            code: project.code,
+            name: project.name,
+            department: project.department,
+            state: project.state,
+            district: project.district,
+            createdAt: project.createdAt
+        },
+        impact: {
+            affectedParcels: impact[0]?.count || 0,
+            affectedArea: impact[0]?.area || 0
+        },
+        geometry: geometry[0]?.geojson || null,
+        acquisition: stageDistribution,
+        risk: risks
+    };
+}
+
 export async function deleteProject(id) {
     await getProject(id);
     return prisma.project.delete({ where: { id } });
