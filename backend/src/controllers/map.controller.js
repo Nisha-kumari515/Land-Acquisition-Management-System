@@ -9,9 +9,9 @@ export async function getMapParcels(request, response, next) {
         const [minX, minY, maxX, maxY] = bbox.split(',').map(Number);
 
         const parcels = await prisma.$queryRaw`
-            SELECT id, ulpin, village, ST_AsGeoJSON(geometry)::json AS geometry
+            SELECT id, ulpin, village, ST_AsGeoJSON(ST_Transform(geometry, 4326))::json AS geometry
             FROM "Parcel"
-            WHERE ST_Intersects(geometry, ST_MakeEnvelope(${minX}, ${minY}, ${maxX}, ${maxY}, 4326))
+            WHERE ST_Intersects(geometry, ST_Transform(ST_MakeEnvelope(${minX}, ${minY}, ${maxX}, ${maxY}, 4326), 32646))
             LIMIT 500
         `;
 
@@ -33,9 +33,9 @@ export async function getMapProjects(request, response, next) {
         const [minX, minY, maxX, maxY] = bbox.split(',').map(Number);
 
         const projects = await prisma.$queryRaw`
-            SELECT id, name, department, ST_AsGeoJSON(geometry)::json AS geometry
+            SELECT id, name, department, ST_AsGeoJSON(ST_Transform(geometry, 4326))::json AS geometry
             FROM "Project"
-            WHERE ST_Intersects(geometry, ST_MakeEnvelope(${minX}, ${minY}, ${maxX}, ${maxY}, 4326))
+            WHERE ST_Intersects(geometry, ST_Transform(ST_MakeEnvelope(${minX}, ${minY}, ${maxX}, ${maxY}, 4326), 32646))
             LIMIT 500
         `;
 
@@ -57,10 +57,10 @@ export async function getMapAffectedParcels(request, response, next) {
         const [minX, minY, maxX, maxY] = bbox.split(',').map(Number);
 
         const affected = await prisma.$queryRaw`
-            SELECT p.id, p.ulpin, pp."acquisitionStage", pp."riskLevel", ST_AsGeoJSON(p.geometry)::json AS geometry
+            SELECT p.id, p.ulpin, pp."acquisitionStage", pp."riskLevel", ST_AsGeoJSON(ST_Transform(p.geometry, 4326))::json AS geometry
             FROM "ProjectParcel" pp
             JOIN "Parcel" p ON pp."parcelId" = p.id
-            WHERE ST_Intersects(p.geometry, ST_MakeEnvelope(${minX}, ${minY}, ${maxX}, ${maxY}, 4326))
+            WHERE ST_Intersects(p.geometry, ST_Transform(ST_MakeEnvelope(${minX}, ${minY}, ${maxX}, ${maxY}, 4326), 32646))
             LIMIT 500
         `;
 

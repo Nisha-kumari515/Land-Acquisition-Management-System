@@ -73,12 +73,51 @@ async function seed() {
             roleId: roleIds.get(RoleCode.NATIONAL_ADMIN)
         }
     });
+    const stateOfficer = await prisma.user.create({
+        data: {
+            name: 'Assam State Officer',
+            email: 'state.assam@bhoomisetu.demo',
+            passwordHash: hashDemoPassword('demo-state-password'),
+            roleId: roleIds.get(RoleCode.STATE_OFFICER),
+            stateId: assam.id
+        }
+    });
     const districtOfficer = await prisma.user.create({
         data: {
             name: 'Kamrup District Officer',
             email: 'kamrup.officer@bhoomisetu.demo',
             passwordHash: hashDemoPassword('demo-officer-password'),
             roleId: roleIds.get(RoleCode.DISTRICT_OFFICER),
+            stateId: assam.id,
+            districtId: kamrup.id
+        }
+    });
+    const acquisitionOfficer = await prisma.user.create({
+        data: {
+            name: 'Acquisition Officer',
+            email: 'acquisition@bhoomisetu.demo',
+            passwordHash: hashDemoPassword('demo-acquisition-password'),
+            roleId: roleIds.get(RoleCode.ACQUISITION_OFFICER),
+            stateId: assam.id,
+            districtId: kamrup.id
+        }
+    });
+    const financeOfficer = await prisma.user.create({
+        data: {
+            name: 'Finance Officer',
+            email: 'finance@bhoomisetu.demo',
+            passwordHash: hashDemoPassword('demo-finance-password'),
+            roleId: roleIds.get(RoleCode.FINANCE_OFFICER),
+            stateId: assam.id,
+            districtId: kamrup.id
+        }
+    });
+    const rrOfficer = await prisma.user.create({
+        data: {
+            name: 'R&R Officer',
+            email: 'rr@bhoomisetu.demo',
+            passwordHash: hashDemoPassword('demo-rr-password'),
+            roleId: roleIds.get(RoleCode.RR_OFFICER),
             stateId: assam.id,
             districtId: kamrup.id
         }
