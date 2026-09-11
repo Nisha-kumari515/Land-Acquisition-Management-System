@@ -34,7 +34,6 @@ export default function Navbar() {
             </div>
 
             <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                <Search size={20} color="var(--primary-navy)" style={{ cursor: 'pointer' }} />
                 <Link to="/login" style={{ textDecoration: 'none', color: 'var(--primary-navy)', fontWeight: 600 }}>Login</Link>
                 <Link to="/login" className="btn-primary" style={{ height: '40px', padding: '0 1.25rem', fontSize: '14px' }}>Explore Platform &rarr;</Link>
             </div>

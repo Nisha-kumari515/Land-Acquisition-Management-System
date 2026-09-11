@@ -24,7 +24,7 @@ export default function FinalCTA() {
                 </p>
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                     <Link to="/login" className="btn-primary" style={{ 
-                        background: 'white', 
+                        background: 'rgba(3, 3, 255, 0.54)', 
                         color: 'var(--primary-navy)', 
                         border: 'none',
                         boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
@@ -32,7 +32,7 @@ export default function FinalCTA() {
                         Explore Platform
                     </Link>
                     <Link to="/login" className="btn-secondary" style={{ 
-                        background: 'rgba(255,255,255,0.1)',
+                        background: 'rgba(3, 184, 255, 0.65)',
                         color: 'white', 
                         borderColor: 'rgba(255,255,255,0.3)',
                         backdropFilter: 'blur(10px)'
