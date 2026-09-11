@@ -646,7 +646,6 @@ select:focus { border-color: var(--brand-500); box-shadow: 0 0 0 3px var(--brand
     gap: 4rem;
     align-items: center;
 }
-.hero-title { font-size: 3rem; font-weight: 800; line-height: 1.1; margin: 1rem 0 1.5rem; color: white; letter-spacing: -0.025em; }
 .hero-subtitle { font-size: 1.125rem; color: var(--brand-100); line-height: 1.6; margin-bottom: 2.5rem; }
 .hero-actions { display: flex; gap: 1rem; align-items: center; }
 .secondary-btn { background: rgba(255,255,255,0.1); color: white; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 500; font-size: 0.875rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s; }
