@@ -3,7 +3,12 @@ import { useAuth } from '../../context/AuthContext';
 import NationalDashboard from './dashboards/NationalDashboard';
 import StateDashboard from './dashboards/StateDashboard';
 import DistrictDashboard from './dashboards/DistrictDashboard';
-import GenericRoleDashboard from './dashboards/GenericRoleDashboard';
+import AcquisitionOfficerDashboard from './dashboards/AcquisitionOfficerDashboard';
+import FinanceDashboard from './dashboards/FinanceDashboard';
+import RROfficerDashboard from './dashboards/RROfficerDashboard';
+import FieldOfficerDashboard from './dashboards/FieldOfficerDashboard';
+import AuditorDashboard from './dashboards/AuditorDashboard';
+import CitizenPortal from './dashboards/CitizenPortal';
 
 export default function DashboardRouter() {
     const { user } = useAuth();
@@ -16,13 +21,17 @@ export default function DashboardRouter() {
         case 'DISTRICT_OFFICER':
             return <DistrictDashboard />;
         case 'ACQUISITION_OFFICER':
-            return <GenericRoleDashboard roleName="Acquisition Officer" dependency="GET /api/dashboard/acquisition" />;
+            return <AcquisitionOfficerDashboard />;
         case 'FINANCE_OFFICER':
-            return <GenericRoleDashboard roleName="Finance Officer" dependency="GET /api/dashboard/finance" />;
+            return <FinanceDashboard />;
         case 'RR_OFFICER':
-            return <GenericRoleDashboard roleName="R&R Officer" dependency="GET /api/dashboard/rr" />;
+            return <RROfficerDashboard />;
         case 'FIELD_OFFICER':
-            return <GenericRoleDashboard roleName="Field Officer" dependency="GET /api/dashboard/field" />;
+            return <FieldOfficerDashboard />;
+        case 'AUDITOR':
+            return <AuditorDashboard />;
+        case 'CITIZEN':
+            return <CitizenPortal />;
         default:
             return <div>Unauthorized Role View</div>;
     }

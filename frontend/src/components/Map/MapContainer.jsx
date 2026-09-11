@@ -12,11 +12,6 @@ import { transformExtent } from 'ol/proj';
 import Draw from 'ol/interaction/Draw';
 
 // BHOOMISETU COLORS
-// Brand: #1E3A8A (blue)
-// Accent: #F59E0B (amber)
-// Affected: #EF4444 (red)
-// Default Parcel: #E5E7EB (gray)
-
 const parcelStyle = new Style({
     stroke: new Stroke({ color: 'rgba(107, 114, 128, 0.5)', width: 1 }),
     fill: new Fill({ color: 'rgba(243, 244, 246, 0.1)' })
@@ -32,14 +27,15 @@ const projectStyle = new Style({
     fill: new Fill({ color: 'rgba(59, 130, 246, 0.1)' })
 });
 
-const selectedStyle = new Style({
-    stroke: new Stroke({ color: '#F59E0B', width: 3 }),
-    fill: new Fill({ color: 'rgba(245, 158, 11, 0.3)' })
+const riskStyle = new Style({
+    stroke: new Stroke({ color: '#F59E0B', width: 2 }),
+    fill: new Fill({ color: 'rgba(245, 158, 11, 0.4)' })
 });
 
 export default function MapContainer({ 
-    parcels, projects, affectedParcels, 
-    onParcelSelect, isDrawing, onDrawingComplete 
+    parcels, projects, affectedParcels, riskParcels,
+    onParcelSelect, isDrawing, onDrawingComplete,
+    layersVisible = { cadastral: true, project: true, affected: true, risk: true }
 }) {
     const mapRef = useRef(null);
     const mapInstance = useRef(null);
@@ -50,23 +46,30 @@ export default function MapContainer({
     const parcelSourceRef = useRef(new VectorSource());
     const projectSourceRef = useRef(new VectorSource());
     const affectedSourceRef = useRef(new VectorSource());
+    const riskSourceRef = useRef(new VectorSource());
+    
+    const parcelLayerRef = useRef(new VectorLayer({ source: parcelSourceRef.current, style: parcelStyle, zIndex: 1 }));
+    const projectLayerRef = useRef(new VectorLayer({ source: projectSourceRef.current, style: projectStyle, zIndex: 3 }));
+    const affectedLayerRef = useRef(new VectorLayer({ source: affectedSourceRef.current, style: affectedStyle, zIndex: 2 }));
+    const riskLayerRef = useRef(new VectorLayer({ source: riskSourceRef.current, style: riskStyle, zIndex: 4 }));
+
     const [mapReady, setMapReady] = useState(false);
 
     useEffect(() => {
         if (!mapRef.current || mapInstance.current) return;
 
-        // Initialize map
         const map = new Map({
             target: mapRef.current,
             layers: [
                 new TileLayer({ source: new OSM() }),
-                new VectorLayer({ source: parcelSourceRef.current, style: parcelStyle, zIndex: 1 }),
-                new VectorLayer({ source: projectSourceRef.current, style: projectStyle, zIndex: 3 }),
-                new VectorLayer({ source: affectedSourceRef.current, style: affectedStyle, zIndex: 2 }),
+                parcelLayerRef.current,
+                affectedLayerRef.current,
+                projectLayerRef.current,
+                riskLayerRef.current,
                 new VectorLayer({ source: vectorSourceRef.current, zIndex: 10 }) // Draw layer
             ],
             view: new View({
-                center: [10214697, 2983792], // Approx Assam WGS84 Web Mercator
+                center: [10214697, 2983792],
                 zoom: 12
             })
         });
@@ -75,7 +78,7 @@ export default function MapContainer({
             if (isDrawing) return;
             const features = map.getFeaturesAtPixel(e.pixel);
             if (features && features.length > 0) {
-                const feature = features.find(f => f.get('ulpin') || f.get('dagNo')); // It's a parcel
+                const feature = features.find(f => f.get('ulpin') || f.get('dagNo') || f.get('id'));
                 if (feature) {
                     onParcelSelect(feature.getProperties());
                 }
@@ -125,7 +128,7 @@ export default function MapContainer({
         }
     }, [isDrawing, onDrawingComplete]);
 
-    // Update Features (Parcels, Projects)
+    // Update Features
     useEffect(() => {
         if (!mapReady) return;
         
@@ -155,21 +158,23 @@ export default function MapContainer({
             }));
         }
 
-    }, [parcels, projects, affectedParcels, mapReady]);
+        riskSourceRef.current.clear();
+        if (riskParcels?.features) {
+            riskSourceRef.current.addFeatures(format.readFeatures(riskParcels, {
+                featureProjection: 'EPSG:3857',
+                dataProjection: 'EPSG:4326'
+            }));
+        }
+    }, [parcels, projects, affectedParcels, riskParcels, mapReady]);
 
-    // Fit view to bounds
+    // Layer Visibility
     useEffect(() => {
-        if (!mapReady || (!parcels?.features?.length && !projects?.features?.length)) return;
-        
-        // Wait briefly for features to load properly before fitting
-        setTimeout(() => {
-            if (!mapInstance.current) return;
-            const extent = projectSourceRef.current.getExtent();
-            if (extent && extent[0] !== Infinity) {
-                mapInstance.current.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 16 });
-            }
-        }, 300);
-    }, [projects, mapReady]);
+        if (!mapReady) return;
+        parcelLayerRef.current.setVisible(layersVisible.cadastral !== false);
+        projectLayerRef.current.setVisible(layersVisible.project !== false);
+        affectedLayerRef.current.setVisible(layersVisible.affected !== false);
+        riskLayerRef.current.setVisible(layersVisible.risk !== false);
+    }, [layersVisible, mapReady]);
 
     return (
         <div ref={mapRef} style={{ width: '100%', height: '100%', minHeight: '500px', background: '#e5e5e5' }} />

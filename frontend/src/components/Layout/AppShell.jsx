@@ -12,14 +12,16 @@ export default function AppShell() {
     if (!user) return <Navigate to="/login" replace />;
 
     const ALL_NAV_ITEMS = [
-        { path: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FINANCE_OFFICER', 'RR_OFFICER', 'FIELD_OFFICER'] },
-        { path: '/app/projects', label: 'Projects', icon: Folder, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER'] },
-        { path: '/app/parcels', label: 'Parcels', icon: Map, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FIELD_OFFICER'] },
-        { path: '/app/gis', label: 'GIS Map', icon: Map, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FIELD_OFFICER'] },
+        { path: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FINANCE_OFFICER', 'RR_OFFICER', 'FIELD_OFFICER', 'AUDITOR'] },
+        { path: '/app/projects', label: 'Projects', icon: Folder, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'AUDITOR'] },
+        { path: '/app/parcels', label: 'Parcels', icon: Map, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FIELD_OFFICER', 'AUDITOR'] },
+        { path: '/app/gis', label: 'GIS Map', icon: Map, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FIELD_OFFICER', 'AUDITOR'] },
         { path: '/app/acquisition', label: 'Acquisition', icon: Activity, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER'] },
         { path: '/app/compensation', label: 'Compensation', icon: IndianRupee, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'FINANCE_OFFICER'] },
         { path: '/app/risks', label: 'Risk Engine', icon: AlertTriangle, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER'] },
-        { path: '/app/reports', label: 'Reports', icon: FileText, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FINANCE_OFFICER', 'RR_OFFICER'] },
+        { path: '/app/reports', label: 'Reports', icon: FileText, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FINANCE_OFFICER', 'RR_OFFICER', 'AUDITOR'] },
+        { path: '/app/documents', label: 'Documents', icon: FileText, roles: ['NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'AUDITOR'] },
+        { path: '/app/audit', label: 'Audit / Activity', icon: Activity, roles: ['NATIONAL_ADMIN', 'AUDITOR'] },
     ];
 
     const navItems = ALL_NAV_ITEMS.filter(item => item.roles.includes(user.role));

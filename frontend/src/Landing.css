@@ -1,0 +1,401 @@
+:root {
+  --bhoomi-navy: #0B1F3A;
+  --bhoomi-blue: #123B6D;
+  --bhoomi-royal: #2563A6;
+  --bhoomi-gis-teal: #0F8B8D;
+  --bhoomi-light-teal: #35B8B0;
+  
+  --bhoomi-white: #FFFFFF;
+  --bhoomi-soft-bg: #F4F7FA;
+  --bhoomi-dark-text: #102033;
+  --bhoomi-sec-text: #5D6B7A;
+  
+  --bhoomi-success: #16805C;
+  --bhoomi-warning: #C88916;
+  --bhoomi-critical: #C43D3D;
+  --bhoomi-info: #2563A6;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--bhoomi-dark-text);
+  margin: 0;
+  padding: 0;
+  background: var(--bhoomi-white);
+  overflow-x: hidden;
+}
+
+.landing-navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 4rem;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.0);
+  color: white;
+}
+.landing-navbar.scrolled {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  color: var(--bhoomi-navy);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  padding: 0.75rem 4rem;
+}
+
+.landing-nav-links {
+  display: flex;
+  gap: 2rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+.landing-nav-links a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
+}
+.landing-nav-links a:hover {
+  color: var(--bhoomi-light-teal);
+}
+
+.landing-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 0 4rem;
+  background: var(--bhoomi-navy);
+  color: white;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('/images/bhoomisetu_hero_gis.jpg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.35;
+  mix-blend-mode: luminosity;
+  animation: slowPan 30s linear infinite alternate;
+}
+
+@keyframes slowPan {
+  from { transform: scale(1.05) translate(0, 0); }
+  to { transform: scale(1.1) translate(-2%, 1%); }
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, var(--bhoomi-navy) 0%, rgba(11,31,58,0.7) 60%, transparent 100%);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 650px;
+}
+
+.hero-eyebrow {
+  color: var(--bhoomi-light-teal);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.hero-title {
+  font-size: 4rem;
+  line-height: 1.1;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 2.5rem;
+  max-width: 550px;
+}
+
+.hero-ctas {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-primary {
+  background: var(--bhoomi-gis-teal);
+  color: white;
+  padding: 0.875rem 2rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid var(--bhoomi-gis-teal);
+}
+.btn-primary:hover {
+  background: var(--bhoomi-light-teal);
+  border-color: var(--bhoomi-light-teal);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: white;
+  padding: 0.875rem 2rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: white;
+}
+
+/* Trust Strip */
+.trust-strip {
+  background: var(--bhoomi-white);
+  padding: 2rem 4rem;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--bhoomi-soft-bg);
+}
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--bhoomi-sec-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Sections */
+.section {
+  padding: 6rem 4rem;
+}
+.section-alt {
+  background: var(--bhoomi-soft-bg);
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--bhoomi-navy);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.section-desc {
+  font-size: 1.125rem;
+  color: var(--bhoomi-sec-text);
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 4rem auto;
+}
+
+/* Problem Section */
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.problem-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+.problem-card:hover {
+  transform: translateY(-5px);
+}
+.problem-card h3 {
+  font-size: 1.25rem;
+  color: var(--bhoomi-navy);
+  margin-bottom: 0.75rem;
+}
+.problem-card p {
+  color: var(--bhoomi-sec-text);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Solution / Workflow Timeline */
+.timeline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--bhoomi-soft-bg);
+  z-index: 0;
+}
+.timeline-step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 120px;
+}
+.timeline-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bhoomi-white);
+  border: 2px solid var(--bhoomi-gis-teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--bhoomi-gis-teal);
+  margin-bottom: 1rem;
+}
+.timeline-step span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--bhoomi-navy);
+}
+
+/* Feature Split */
+.feature-split {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.feature-split.reverse {
+  flex-direction: row-reverse;
+}
+.feature-text {
+  flex: 1;
+}
+.feature-visual {
+  flex: 1;
+  background: var(--bhoomi-white);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(11, 31, 58, 0.08);
+}
+.feature-text h3 {
+  font-size: 2rem;
+  color: var(--bhoomi-navy);
+  margin-bottom: 1rem;
+}
+.feature-text p {
+  font-size: 1.125rem;
+  color: var(--bhoomi-sec-text);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Footer */
+.landing-footer {
+  background: var(--bhoomi-navy);
+  color: white;
+  padding: 4rem 4rem 2rem 4rem;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 4rem;
+  margin-bottom: 4rem;
+}
+.footer-col h4 {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: var(--bhoomi-gis-teal);
+}
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+}
+.footer-col ul li {
+  margin-bottom: 0.75rem;
+}
+.footer-col ul li a {
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+.footer-col ul li a:hover {
+  color: white;
+}
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 2rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.5);
+}
+
+@media (max-width: 768px) {
+  .landing-navbar, .landing-hero, .section, .trust-strip, .landing-footer {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  .landing-nav-links { display: none; }
+  .hero-title { font-size: 2.5rem; }
+  .hero-ctas { flex-direction: column; }
+  .problem-grid { grid-template-columns: 1fr; }
+  .feature-split { flex-direction: column; }
+  .feature-split.reverse { flex-direction: column; }
+  .timeline { flex-direction: column; align-items: flex-start; gap: 2rem; }
+  .timeline::before { left: 24px; top: 0; bottom: 0; width: 2px; height: 100%; }
+  .timeline-step { flex-direction: row; gap: 1rem; width: 100%; text-align: left; }
+  .timeline-circle { margin-bottom: 0; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+}
+
+.gis-floating-card {
+  position: absolute;
+  right: 10%;
+  top: 30%;
+  background: rgba(11, 31, 58, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 280px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  animation: float 6s ease-in-out infinite;
+}
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

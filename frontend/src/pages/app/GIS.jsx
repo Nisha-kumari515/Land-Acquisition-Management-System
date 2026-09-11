@@ -30,17 +30,30 @@ export default function GIS() {
         setLoading(true);
         setError('');
         try {
-            const [parcelRes, projRes, affectedRes] = await Promise.all([
-                fetchApi(`/map/parcels?bbox=${BBOX}`),
-                fetchApi(`/map/projects?bbox=${BBOX}`),
-                fetchApi(`/map/affected-parcels?bbox=${BBOX}`)
-            ]);
-            setParcels(parcelRes);
-            setProjects(projRes);
-            setAffectedParcels(affectedRes);
+            // Fetch the official Assam map data
+            const assamMapData = await fetchApi('/integration/assam/map?state=18&district=16&tehsil=16111&village=16111059');
+            
+            // Format the raw Assam payload into a GeoJSON FeatureCollection
+            let features = [];
+            if (assamMapData && assamMapData.features) {
+                features = assamMapData.features.map(f => ({
+                    type: 'Feature',
+                    properties: { dagNo: f.properties?.dag_no, ulpin: `AS-${f.properties?.dag_no}` },
+                    geometry: f.geometry
+                }));
+            }
+
+            const geojsonParcels = {
+                type: 'FeatureCollection',
+                features: features
+            };
+
+            setParcels(geojsonParcels);
+            setProjects({ type: 'FeatureCollection', features: [] });
+            setAffectedParcels({ type: 'FeatureCollection', features: [] });
         } catch (err) {
             console.error(err);
-            setError('Failed to load GIS layers. Please check connection and CRS configuration.');
+            setError('Failed to load actual Assam BhuNaksha data.');
         } finally {
             setLoading(false);
         }
