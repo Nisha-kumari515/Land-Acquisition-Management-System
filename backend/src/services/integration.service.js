@@ -183,7 +183,7 @@ export async function syncIntegration(dataSourceId, input = {}) {
             recordsRejected: Number(input.recordsRejected ?? 0),
             recordsFailed: Number(input.recordsFailed ?? 0),
             errorMessage: input.errorMessage ?? null,
-            rawSnapshotRef: input.rawSnapshotRef ?? `assam://demo/${integration.name.toLowerCase()}/${startedAt.toISOString()}`
+            rawSnapshotRef: input.rawSnapshotRef ?? `assam://snapshot/${integration.name.toLowerCase()}/${startedAt.toISOString()}`
         },
         include: {
             dataSource: { select: { id: true, name: true, description: true } }

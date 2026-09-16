@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchApi } from '../../lib/api';
+import { fetchApi } from '../../api/client';
 import { IndianRupee, FileText, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

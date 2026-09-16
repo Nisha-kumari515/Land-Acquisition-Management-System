@@ -32,6 +32,8 @@ export async function analyzeProjectImpact(projectId, input) {
             )
             SELECT
                 p.id AS parcel_id,
+                p."dagNo",
+                p."village",
                 p.area::text AS total_area,
                 ST_Area(ST_Intersection(p.geometry, input_geometry.geom))::text AS affected_area,
                 ROUND(

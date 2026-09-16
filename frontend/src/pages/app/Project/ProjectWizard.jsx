@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchApi } from '../../../lib/api';
+import { fetchApi } from '../../../api/client';
+import { projectApi } from '../../../api/projects';
+import { mapApi } from '../../../api/map';
 import { FileText, Map as MapIcon, Settings, CheckCircle, ArrowRight, Upload, AlertCircle } from 'lucide-react';
 import MapContainer from '../../../components/Map/MapContainer';
 
@@ -11,48 +13,71 @@ export default function ProjectWizard() {
     const [error, setError] = useState(null);
 
     // Form Data
+    const [projectId, setProjectId] = useState(null);
     const [formData, setFormData] = useState({
         code: '',
         name: '',
         department: '',
-        projectType: 'INFRASTRUCTURE',
+        projectType: 'HIGHWAY',
         description: '',
-        stateId: 18, // Assam
-        districtId: 16, 
+        stateId: 'cmtwxf9p80007dwhow6h9dwq5', // Assam Default
+        districtId: 'cmtwxf9pe000adwho2zpivvk1', // Kamrup M Default
+        circleId: '16111',
+        villageId: '16111059',
+        roadWidth: '30' // For highways
     });
 
+    // Geography Dropdowns (Assam specific for Demo)
+    const districts = [
+        { id: 'cmtwxf9pe000adwho2zpivvk1', name: 'Kamrup Metropolitan' },
+        { id: '15', name: 'Kamrup Rural' },
+        { id: '2', name: 'Barpeta' }
+    ];
+    
+    const circles = {
+        'cmtwxf9pe000adwho2zpivvk1': [{ id: '16111', name: 'Guwahati' }, { id: '16112', name: 'Dispur' }],
+        '15': [{ id: '15001', name: 'Rangia' }],
+        '2': [{ id: '2001', name: 'Barpeta' }]
+    };
+
+    const villages = {
+        '16111': [{ id: '16111059', name: 'Nongpoh / Beltola Area' }, { id: '16111060', name: 'Azara' }],
+        '16112': [{ id: '16112001', name: 'Hatigaon' }],
+        '15001': [{ id: '15001001', name: 'Kamalpur' }],
+        '2001': [{ id: '2001001', name: 'Pathsala' }]
+    };
+
     // Map Data
-    const [mapFeatures, setMapFeatures] = useState(null);
+    const [mapFeatures, setMapFeatures] = useState({ type: 'FeatureCollection', features: [] });
+    const [existingProjects, setExistingProjects] = useState({ type: 'FeatureCollection', features: [] });
     const [projectGeometry, setProjectGeometry] = useState(null);
     const [impactData, setImpactData] = useState(null);
 
-    React.useEffect(() => {
-        // Fetch background cadastral map so user can see parcels while drawing
-        fetchApi('/integration/assam/map?state=18&district=16&tehsil=16111&village=16111059')
+    useEffect(() => {
+        // Fetch background cadastral map + existing projects for the selected village
+        mapApi.getParcels({ village: formData.villageId })
             .then(data => {
-                if (data && data.features) {
-                    setMapFeatures({
-                        type: 'FeatureCollection',
-                        features: data.features.map(f => ({
-                            type: 'Feature',
-                            properties: { dagNo: f.properties?.dag_no },
-                            geometry: f.geometry
-                        }))
-                    });
-                }
+                if (data) setMapFeatures(data);
             })
             .catch(console.error);
-    }, []);
+
+        mapApi.getProjects()
+            .then(data => {
+                if (data) setExistingProjects(data);
+            })
+            .catch(console.error);
+    }, [formData.villageId]);
 
     const handleNext = () => setStep(s => s + 1);
     const handlePrev = () => setStep(s => s - 1);
 
     const handleFormChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleDrawingComplete = (geojson) => {
-        setProjectGeometry(geojson);
+    const handleDrawingComplete = (geometry) => {
+        setProjectGeometry(geometry);
     };
 
     const runImpactAnalysis = async () => {
@@ -60,24 +85,37 @@ export default function ProjectWizard() {
         setLoading(true);
         setError(null);
         try {
-            const mapData = await fetchApi('/integration/assam/map?state=18&district=16&tehsil=16111&village=16111059');
+            let pid = projectId;
+            if (!pid) {
+                const result = await projectApi.create({
+                    ...formData,
+                    type: formData.projectType,
+                    status: 'PROPOSED'
+                });
+                pid = result.id;
+                setProjectId(pid);
+            }
+
+            // Let the backend calculate intersection on actual parcel data
+            const impact = await projectApi.analyzeImpact(pid, projectGeometry);
             
-            const affected = (mapData?.features || []).slice(0, 3).map(f => ({
-                id: f.properties?.dag_no || Math.random().toString(),
-                dagNo: f.properties?.dag_no,
-                village: 'Assam Village',
-                area: '1.5 Ha',
-                impact: '100%'
+            const affected = (impact.parcels || []).map(p => ({
+                id: p.parcel_id,
+                dagNo: p.dagNo || 'N/A',
+                village: p.village || 'N/A',
+                area: p.affected_area ? `${Number(p.affected_area).toFixed(2)} sq.m` : 'N/A',
+                impact: p.affected_percentage ? `${p.affected_percentage}%` : 'N/A'
             }));
 
             setImpactData({
                 affectedParcels: affected,
-                totalArea: '4.5 Ha',
-                parcelCount: affected.length
+                totalArea: impact.totalAffectedArea ? `${Number(impact.totalAffectedArea).toFixed(2)} sq.m` : '0 sq.m',
+                parcelCount: impact.affectedParcels || affected.length
             });
             handleNext();
         } catch (err) {
-            setError('Failed to run GIS impact analysis.');
+            console.error(err);
+            setError('Failed to run GIS impact analysis. ' + (err.message || ''));
         } finally {
             setLoading(false);
         }
@@ -87,15 +125,17 @@ export default function ProjectWizard() {
         setLoading(true);
         setError(null);
         try {
-            const result = await fetchApi('/projects', {
-                method: 'POST',
-                body: JSON.stringify({
+            if (projectId) {
+                await projectApi.submit(projectId);
+                navigate(`/app/projects/${projectId}`);
+            } else {
+                const result = await projectApi.create({
                     ...formData,
-                    status: 'PROPOSED',
-                    targetDate: new Date(new Date().setFullYear(new Date().getFullYear() + 2)).toISOString()
-                })
-            });
-            navigate(`/app/projects/${result.id}`);
+                    type: formData.projectType,
+                    status: 'PROPOSED'
+                });
+                navigate(`/app/projects/${result.id}`);
+            }
         } catch (err) {
             setError(err.message || 'Failed to submit proposal.');
         } finally {
@@ -104,40 +144,44 @@ export default function ProjectWizard() {
     };
 
     return (
-        <div className="dashboard-page slide-in" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <header className="page-header" style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--surface-200)' }}>
-                <div>
-                    <h1 className="page-title">Create Project Proposal</h1>
-                    <p className="page-subtitle">Land Requiring Body / PIA Workspace</p>
-                </div>
-            </header>
+        <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.25rem' }}>Create Project Proposal</h1>
+            <p className="text-secondary" style={{ marginBottom: '2rem' }}>Land Requiring Body / PIA Workspace</p>
 
-            {error && <div className="error-banner m-4">{error}</div>}
+            {error && <div className="error-banner mb-6">{error}</div>}
 
-            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-                <aside style={{ width: '250px', background: 'white', borderRight: '1px solid var(--surface-200)', padding: '2rem 1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '2rem' }}>
+                <aside>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <div className={`step-item ${step >= 1 ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: step >= 1 ? 1 : 0.5 }}>
-                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: step >= 1 ? 'var(--primary-600)' : 'var(--surface-300)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={16}/></div>
-                            <span style={{ fontWeight: 600 }}>1. Project Details</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: step >= 1 ? 'var(--primary-600)' : 'var(--surface-400)', fontWeight: step >= 1 ? 600 : 400 }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: step >= 1 ? 'var(--primary-100)' : 'var(--surface-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
+                                {step > 1 ? <CheckCircle size={14} /> : '1'}
+                            </div>
+                            Project Details
                         </div>
-                        <div className={`step-item ${step >= 2 ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: step >= 2 ? 1 : 0.5 }}>
-                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: step >= 2 ? 'var(--primary-600)' : 'var(--surface-300)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MapIcon size={16}/></div>
-                            <span style={{ fontWeight: 600 }}>2. Define Geometry</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: step >= 2 ? 'var(--primary-600)' : 'var(--surface-400)', fontWeight: step >= 2 ? 600 : 400 }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: step >= 2 ? 'var(--primary-100)' : 'var(--surface-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
+                                {step > 2 ? <CheckCircle size={14} /> : '2'}
+                            </div>
+                            Define Geometry
                         </div>
-                        <div className={`step-item ${step >= 3 ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: step >= 3 ? 1 : 0.5 }}>
-                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: step >= 3 ? 'var(--primary-600)' : 'var(--surface-300)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Settings size={16}/></div>
-                            <span style={{ fontWeight: 600 }}>3. Impact Analysis</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: step >= 3 ? 'var(--primary-600)' : 'var(--surface-400)', fontWeight: step >= 3 ? 600 : 400 }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: step >= 3 ? 'var(--primary-100)' : 'var(--surface-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
+                                {step > 3 ? <CheckCircle size={14} /> : '3'}
+                            </div>
+                            Impact Analysis
                         </div>
-                        <div className={`step-item ${step >= 4 ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: step >= 4 ? 1 : 0.5 }}>
-                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: step >= 4 ? 'var(--primary-600)' : 'var(--surface-300)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircle size={16}/></div>
-                            <span style={{ fontWeight: 600 }}>4. Review & Submit</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: step >= 4 ? 'var(--primary-600)' : 'var(--surface-400)', fontWeight: step >= 4 ? 600 : 400 }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: step >= 4 ? 'var(--primary-100)' : 'var(--surface-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
+                                {step > 4 ? <CheckCircle size={14} /> : '4'}
+                            </div>
+                            Review & Submit
                         </div>
                     </div>
                 </aside>
-
-                <main style={{ flex: 1, padding: '2rem', overflowY: 'auto', background: 'var(--surface-50)' }}>
-                    <div className="panel" style={{ maxWidth: '800px', margin: '0 auto' }}>
+                
+                <main className="panel">
+                    <div style={{ minHeight: '400px' }}>
                         {step === 1 && (
                             <div className="slide-in">
                                 <h2>Project Information</h2>
@@ -173,20 +217,64 @@ export default function ProjectWizard() {
                                         </div>
                                     </div>
 
+                                    {formData.projectType === 'HIGHWAY' && (
+                                        <div style={{ display: 'flex', gap: '1rem', background: 'var(--surface-50)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--surface-200)' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Road Classification</label>
+                                                <select name="roadType" className="input-field" style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--surface-300)', borderRadius: '4px' }}>
+                                                    <option>National Highway (NH)</option>
+                                                    <option>State Highway (SH)</option>
+                                                    <option>Major District Road (MDR)</option>
+                                                    <option>Other District Road (ODR)</option>
+                                                </select>
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Corridor Right of Way Width (meters)</label>
+                                                <input type="number" name="roadWidth" value={formData.roadWidth} onChange={handleFormChange} className="input-field" style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--surface-300)', borderRadius: '4px' }} />
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Description / Purpose</label>
-                                        <textarea name="description" value={formData.description} onChange={handleFormChange} rows={4} style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--surface-300)', borderRadius: '4px' }}></textarea>
+                                        <h3 style={{ fontSize: '1rem', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--surface-200)' }}>Geography Selection</h3>
+                                        <div style={{ display: 'flex', gap: '1rem' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>State</label>
+                                                <select name="stateId" value={formData.stateId} disabled style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--surface-300)', borderRadius: '4px', background: 'var(--surface-100)' }}>
+                                                    <option value="18">Assam</option>
+                                                </select>
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>District</label>
+                                                <select name="districtId" value={formData.districtId} onChange={handleFormChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--surface-300)', borderRadius: '4px' }}>
+                                                    {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Revenue Circle</label>
+                                                <select name="circleId" value={formData.circleId} onChange={handleFormChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--surface-300)', borderRadius: '4px' }}>
+                                                    {(circles[formData.districtId] || []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                                </select>
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Target Village</label>
+                                                <select name="villageId" value={formData.villageId} onChange={handleFormChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--surface-300)', borderRadius: '4px' }}>
+                                                    {(villages[formData.circleId] || []).map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Purpose / Description</label>
+                                        <textarea name="description" value={formData.description} onChange={handleFormChange} placeholder="Provide justification for land acquisition..." rows={4} className="input-field" style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--surface-300)', borderRadius: '4px', resize: 'vertical' }} />
                                     </div>
 
-                                    <div className="panel" style={{ background: 'var(--surface-100)', border: '1px dashed var(--surface-300)' }}>
-                                        <h4 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Upload size={16}/> Upload Supporting Documents</h4>
-                                        <p style={{ fontSize: '0.875rem', color: 'var(--surface-500)', marginBottom: '1rem' }}>Upload DPR, administrative approvals, and preliminary requirement maps.</p>
-                                        <button className="secondary-btn">Select Files</button>
-                                    </div>
                                 </div>
-                                
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
-                                    <button className="primary-btn" onClick={handleNext} disabled={!formData.code || !formData.name}>Next <ArrowRight size={16} /></button>
+                                    <button className="primary-btn" onClick={handleNext}>Next: Define Geometry</button>
                                 </div>
                             </div>
                         )}
@@ -194,11 +282,12 @@ export default function ProjectWizard() {
                         {step === 2 && (
                             <div className="slide-in">
                                 <h2>Define Project Geometry</h2>
-                                <p className="text-secondary mb-6">Draw the required corridor or boundary on the map to run spatial impact analysis.</p>
+                                <p className="text-secondary mb-6">Draw the required corridor or boundary on the map to run spatial impact analysis. Existing infrastructure, highways, and houses are visible on the base map layer.</p>
                                 
-                                <div style={{ height: '400px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--surface-300)', marginBottom: '2rem' }}>
+                                <div style={{ height: '450px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--surface-300)', marginBottom: '2rem' }}>
                                     <MapContainer 
-                                        parcels={mapFeatures || { type: 'FeatureCollection', features: [] }}
+                                        parcels={mapFeatures}
+                                        projects={existingProjects}
                                         isDrawing={true}
                                         onDrawingComplete={handleDrawingComplete}
                                     />

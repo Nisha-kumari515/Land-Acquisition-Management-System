@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchApi } from '../../../lib/api';
+import { fetchApi } from '../../../api/client';
 import { useAuth } from '../../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import MapContainer from '../../../components/Map/MapContainer';

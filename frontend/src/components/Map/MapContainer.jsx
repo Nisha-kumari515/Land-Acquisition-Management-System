@@ -4,6 +4,7 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
+import XYZ from 'ol/source/XYZ';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
@@ -58,10 +59,18 @@ export default function MapContainer({
     useEffect(() => {
         if (!mapRef.current || mapInstance.current) return;
 
+        const assamExtent = transformExtent([89.68, 24.13, 96.01, 27.97], 'EPSG:4326', 'EPSG:3857');
+
         const map = new Map({
             target: mapRef.current,
             layers: [
-                new TileLayer({ source: new OSM() }),
+                new TileLayer({ 
+                    source: new XYZ({ url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', maxZoom: 19 }) 
+                }),
+                new TileLayer({ 
+                    source: new OSM(),
+                    opacity: 0.4
+                }),
                 parcelLayerRef.current,
                 affectedLayerRef.current,
                 projectLayerRef.current,
@@ -69,8 +78,10 @@ export default function MapContainer({
                 new VectorLayer({ source: vectorSourceRef.current, zIndex: 10 }) // Draw layer
             ],
             view: new View({
-                center: [10214697, 2983792],
-                zoom: 12
+                center: [10214697, 2983792], // Kamrup approx
+                zoom: 12,
+                extent: assamExtent, // Restrict to Assam
+                minZoom: 6
             })
         });
 

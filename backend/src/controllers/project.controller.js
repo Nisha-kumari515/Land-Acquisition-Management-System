@@ -19,7 +19,7 @@ export async function getById(request, response, next) {
 
 export async function create(request, response, next) {
     try {
-        return sendSuccess(response, await projectService.createProject(request.body), 'Project created', 201);
+        return sendSuccess(response, await projectService.createProject({ ...request.body, createdById: request.user.sub }), 'Project created', 201);
     } catch (error) {
         return next(error);
     }
@@ -31,6 +31,22 @@ export async function update(request, response, next) {
     } catch (error) {
         return next(error);
     }
+}
+
+export async function submit(request, response, next) {
+    try { return sendSuccess(response, await projectService.submitProject(request.params.id, request.user.sub), 'Project submitted'); } catch (error) { return next(error); }
+}
+
+export async function approve(request, response, next) {
+    try { return sendSuccess(response, await projectService.approveProject(request.params.id, request.user.sub), 'Project approved'); } catch (error) { return next(error); }
+}
+
+export async function reject(request, response, next) {
+    try { return sendSuccess(response, await projectService.rejectProject(request.params.id, request.user.sub), 'Project rejected'); } catch (error) { return next(error); }
+}
+
+export async function archive(request, response, next) {
+    try { return sendSuccess(response, await projectService.archiveProject(request.params.id, request.user.sub), 'Project archived'); } catch (error) { return next(error); }
 }
 
 export async function getProjectIntelligence(request, response, next) {
