@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchApi } from '../../../lib/api';
+import { fetchApi } from '../../../api/client';
 import { Activity, ShieldCheck, FileText, Database, Map as MapIcon, History, AlertTriangle } from 'lucide-react';
 import MapContainer from '../../../components/Map/MapContainer';
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchApi } from '../../../lib/api';
+import { fetchApi } from '../../../api/client';
 import { Users, AlertTriangle, CheckCircle, Clock, ArrowRight, Activity, Map as MapIcon, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

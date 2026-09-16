@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchApi } from '../../lib/api';
+import { fetchApi } from '../../api/client';
 import { Search, Filter, Map, ArrowRight, Download } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import AssamBhuNakshaLookup from './AssamBhuNakshaLookup';

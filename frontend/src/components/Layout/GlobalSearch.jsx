@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
-import { fetchApi } from '../../lib/api';
+import { fetchApi } from '../../api/client';
 
 export default function GlobalSearch() {
     const [query, setQuery] = useState('');

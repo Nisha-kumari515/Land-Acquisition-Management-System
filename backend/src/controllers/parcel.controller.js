@@ -60,6 +60,15 @@ export async function getParcelSourceHistory(request, response, next) {
     }
 }
 
+export async function getGeometry(request, response, next) {
+    try {
+        const data = await parcelService.getParcelGeometry(request.params.id);
+        return sendSuccess(response, data, 'Parcel geometry retrieved');
+    } catch (error) {
+        return next(error);
+    }
+}
+
 export async function remove(request, response, next) {
     try {
         await parcelService.deleteParcel(request.params.id);

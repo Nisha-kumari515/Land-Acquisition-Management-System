@@ -88,6 +88,12 @@ export async function getParcel(id) {
     return parcel;
 }
 
+export async function getParcelGeometry(id) {
+    const geometry = await prisma.$queryRaw`SELECT ST_AsGeoJSON(geometry)::json AS geojson FROM "Parcel" WHERE id = ${id}`;
+    if (!geometry.length) throw new AppError(404, 'PARCEL_NOT_FOUND', 'Parcel not found');
+    return { id, geometry: geometry[0]?.geojson || null };
+}
+
 export async function createParcel(input) {
     await assertGeography(input.stateId, input.districtId);
     return prisma.parcel.create({ data: parcelData(input), include: parcelInclude });

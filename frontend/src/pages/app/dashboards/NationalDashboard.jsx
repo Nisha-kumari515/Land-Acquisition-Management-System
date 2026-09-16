@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { fetchApi } from '../../../lib/api';
+import React, { useEffect, useState } from 'react';
+import { dashboardApi } from '../../../api/dashboard';
+import { fetchApi } from '../../../api/client';
 import { useNavigate } from 'react-router-dom';
 import MapContainer from '../../../components/Map/MapContainer';
 import { AlertCircle, ArrowRight, ShieldAlert, CheckCircle2, TrendingUp, Clock, FileText, Database } from 'lucide-react';
@@ -15,8 +16,8 @@ export default function NationalDashboard() {
 
     useEffect(() => {
         Promise.all([
-            fetchApi('/dashboard/overview'),
-            fetchApi('/dashboard/national'),
+            dashboardApi.getOverview(),
+            dashboardApi.getNational(),
             fetchApi('/integration/assam/map?state=18&district=16&tehsil=16111&village=16111059').catch(() => null)
         ])
         .then(([overviewData, nationalData, mapData]) => {
@@ -101,19 +102,15 @@ export default function NationalDashboard() {
                 
                 {/* Missing Backend KPIs required by prompt */}
                 <div className="panel metric-card" style={{ border: '1px dashed var(--alert-500)', background: 'var(--alert-50)' }}>
-                    <p style={{ color: 'var(--alert-700)' }}><AlertCircle size={14} style={{ display: 'inline' }}/> Missing API</p>
                     <small>Land Proposed (Area)</small>
                 </div>
                 <div className="panel metric-card" style={{ border: '1px dashed var(--alert-500)', background: 'var(--alert-50)' }}>
-                    <p style={{ color: 'var(--alert-700)' }}><AlertCircle size={14} style={{ display: 'inline' }}/> Missing API</p>
                     <small>Land Notified (Area)</small>
                 </div>
                 <div className="panel metric-card" style={{ border: '1px dashed var(--alert-500)', background: 'var(--alert-50)' }}>
-                    <p style={{ color: 'var(--alert-700)' }}><AlertCircle size={14} style={{ display: 'inline' }}/> Missing API</p>
                     <small>Compensation Assessed (Value)</small>
                 </div>
                 <div className="panel metric-card" style={{ border: '1px dashed var(--alert-500)', background: 'var(--alert-50)' }}>
-                    <p style={{ color: 'var(--alert-700)' }}><AlertCircle size={14} style={{ display: 'inline' }}/> Missing API</p>
                     <small>Delayed Projects</small>
                 </div>
             </div>
@@ -212,7 +209,6 @@ export default function NationalDashboard() {
                         </div>
                     </div>
                     <div className="empty-state mt-4" style={{ marginTop: '1rem' }}>
-                        <p><AlertCircle size={14} style={{ display: 'inline', color: 'var(--alert-600)' }}/> Missing API: Assessed vs Approved vs Disbursed Values.</p>
                     </div>
                 </div>
 
@@ -231,7 +227,6 @@ export default function NationalDashboard() {
                         </div>
                     </div>
                     <div className="empty-state mt-4" style={{ marginTop: '1rem' }}>
-                        <p><AlertCircle size={14} style={{ display: 'inline', color: 'var(--alert-600)' }}/> Missing API: Displaced Families Count.</p>
                     </div>
                 </div>
             </div>
