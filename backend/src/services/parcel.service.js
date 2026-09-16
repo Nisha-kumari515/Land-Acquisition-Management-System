@@ -2,6 +2,14 @@ import { prisma } from '../config/database.js';
 import { AppError } from '../utils/response.js';
 import { getPagination, paginatedResponse } from '../utils/pagination.js';
 
+const riskLevels = new Set(['LOW', 'MEDIUM', 'HIGH']);
+const acquisitionStages = new Set(['PROPOSAL', 'SCRUTINY', 'SURVEY', 'NOTIFICATION', 'AWARD', 'COMPENSATION', 'POSSESSION', 'RR', 'COMPLETED']);
+const compensationStatuses = new Set(['PENDING', 'ASSESSED', 'APPROVED', 'PARTIALLY_PAID', 'PAID', 'ON_HOLD']);
+
+function validateFilter(value, allowed, fieldName) {
+    if (value && !allowed.has(value)) throw new AppError(400, 'VALIDATION_ERROR', `${fieldName} is invalid`);
+}
+
 const parcelInclude = {
     state: { select: { id: true, code: true, name: true } },
     district: { select: { id: true, code: true, name: true } },
@@ -31,12 +39,40 @@ async function assertGeography(stateId, districtId) {
 }
 
 export async function listParcels(query) {
+    validateFilter(query.riskLevel, riskLevels, 'riskLevel');
+    validateFilter(query.acquisitionStatus, acquisitionStages, 'acquisitionStatus');
+    validateFilter(query.compensationStatus, compensationStatuses, 'compensationStatus');
     const { page, pageSize, skip, take } = getPagination(query);
+    const projectParcelFilters = {
+        ...(query.projectId ? { projectId: query.projectId } : {}),
+        ...(query.riskLevel ? { riskLevel: query.riskLevel } : {}),
+        ...(query.acquisitionStatus ? { acquisitionStage: query.acquisitionStatus } : {}),
+        ...(query.compensationStatus ? { compensationStatus: query.compensationStatus } : {})
+    };
     const where = {
         ...(query.stateId ? { stateId: query.stateId } : {}),
+        ...(query.state ? { state: { OR: [{ id: query.state }, { code: query.state }, { name: { contains: query.state, mode: 'insensitive' } }] } } : {}),
         ...(query.districtId ? { districtId: query.districtId } : {}),
+        ...(query.district ? { district: { OR: [{ id: query.district }, { code: query.district }, { name: { contains: query.district, mode: 'insensitive' } }] } } : {}),
         ...(query.village ? { village: { contains: query.village, mode: 'insensitive' } } : {}),
-        ...(query.ulpin ? { ulpin: query.ulpin } : {})
+        ...(query.circle ? { circle: { contains: query.circle, mode: 'insensitive' } } : {}),
+        ...(query.dagNo ? { dagNo: { contains: query.dagNo, mode: 'insensitive' } } : {}),
+        ...(query.pattaNo ? { pattaNo: { contains: query.pattaNo, mode: 'insensitive' } } : {}),
+        ...(query.ulpin ? { ulpin: query.ulpin } : {}),
+        ...(query.sourceSystem ? { sourceSystem: query.sourceSystem } : {}),
+        ...(query.search ? {
+            OR: [
+                { village: { contains: query.search, mode: 'insensitive' } },
+                { dagNo: { contains: query.search, mode: 'insensitive' } },
+                { pattaNo: { contains: query.search, mode: 'insensitive' } },
+                { ulpin: { contains: query.search, mode: 'insensitive' } },
+                { sourceId: { contains: query.search, mode: 'insensitive' } },
+                { owners: { some: { name: { contains: query.search, mode: 'insensitive' } } } }
+            ]
+        } : {}),
+        ...(query.ownerName ? { owners: { some: { name: { contains: query.ownerName, mode: 'insensitive' } } } } : {}),
+        ...(Object.keys(projectParcelFilters).length > 0 ? { projectParcels: { some: projectParcelFilters } } : {}),
+        ...(query.districtName ? { district: { name: { contains: query.districtName, mode: 'insensitive' } } } : {})
     };
     const [items, total] = await prisma.$transaction([
         prisma.parcel.findMany({ where, include: parcelInclude, orderBy: { createdAt: 'desc' }, skip, take }),
@@ -68,6 +104,88 @@ export async function updateParcel(id, input) {
         data: parcelData({ ...existing, ...input, stateId, districtId }),
         include: parcelInclude
     });
+}
+
+export async function getParcelIntelligence(id) {
+    const parcel = await prisma.parcel.findUnique({
+        where: { id },
+        include: {
+            state: { select: { name: true, code: true } },
+            district: { select: { name: true, code: true } },
+            owners: true,
+            documents: true,
+            fieldVerifications: { orderBy: { createdAt: 'desc' }, take: 1 },
+            projectParcels: {
+                include: {
+                    project: { select: { name: true, code: true, department: true } },
+                    riskAlerts: { orderBy: { score: 'desc' } },
+                    acquisitionCase: {
+                        include: { compensation: true }
+                    },
+                    rrFamilies: true
+                }
+            }
+        }
+    });
+
+    if (!parcel) throw new AppError(404, 'PARCEL_NOT_FOUND', 'Parcel not found');
+
+    const geometry = await prisma.$queryRaw`SELECT ST_AsGeoJSON(geometry)::json AS geojson FROM "Parcel" WHERE id = ${id}`;
+
+    return {
+        parcel: {
+            id: parcel.id,
+            ulpin: parcel.ulpin,
+            village: parcel.village,
+            area: parcel.area,
+            sourceSystem: parcel.sourceSystem
+        },
+        geometry: geometry[0]?.geojson || null,
+        ownership: parcel.owners,
+        projects: parcel.projectParcels.map((pp) => ({
+            id: pp.id,
+            project: pp.project,
+            acquisitionStage: pp.acquisitionStage,
+            compensationStatus: pp.compensationStatus,
+            riskLevel: pp.riskLevel,
+            risks: pp.riskAlerts,
+            compensation: pp.acquisitionCase?.compensation || null,
+            rr: pp.rrFamilies
+        })),
+        fieldVerification: parcel.fieldVerifications[0] || null,
+        documents: parcel.documents,
+        dataFreshness: { lastSyncedAt: parcel.updatedAt }
+    };
+}
+
+export async function getParcelSource(id) {
+    const parcel = await prisma.parcel.findUnique({
+        where: { id },
+        select: { sourceSystem: true, sourceId: true, updatedAt: true }
+    });
+
+    if (!parcel) throw new AppError(404, 'PARCEL_NOT_FOUND', 'Parcel not found');
+
+    return {
+        sourceSystem: parcel.sourceSystem || 'MANUAL',
+        sourceId: parcel.sourceId || null,
+        dataOrigin: parcel.sourceSystem ? 'OFFICIAL_API' : 'USER_INPUT',
+        lastSyncedAt: parcel.updatedAt
+    };
+}
+
+export async function getParcelSourceHistory(id) {
+    const parcel = await getParcelSource(id);
+    const syncLogs = await prisma.syncLog.findMany({
+        where: { recordId: id },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, status: true, message: true, createdAt: true }
+    });
+
+    return {
+        ...parcel,
+        syncHistory: syncLogs
+    };
 }
 
 export async function deleteParcel(id) {

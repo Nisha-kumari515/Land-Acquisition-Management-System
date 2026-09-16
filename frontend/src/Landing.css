@@ -1,0 +1,511 @@
+:root {
+  /* Global Color System */
+  --primary-navy: #163A70;
+  --secondary-navy: #234F8F;
+  --primary-teal: #009B9A;
+  --accent-teal: #00B8B5;
+  --bg-light: #F4F8FB;
+  --bg-soft-blue: #EAF2FA;
+  --surface: #FFFFFF;
+  --text-primary: #14213D;
+  --text-secondary: #526581;
+  --border-color: #D9E3EE;
+  
+  --success: #159A72;
+  --warning: #D98B00;
+  --danger: #D64545;
+  --footer-bg: #102447;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', 'Manrope', system-ui, -apple-system, sans-serif;
+  color: var(--text-primary);
+  margin: 0; padding: 0;
+  background: var(--bg-light);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4 { margin: 0; color: var(--text-primary); font-weight: 700; letter-spacing: -0.02em; }
+
+.section-title {
+  font-size: clamp(34px, 3.2vw, 52px);
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  text-align: center;
+  color: var(--primary-navy);
+}
+
+.section-desc {
+  font-size: clamp(16px, 1.5vw, 18px);
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 4rem auto;
+  line-height: 1.6;
+}
+
+.section-label {
+  font-size: 13px;
+  color: var(--primary-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+/* Card Design System */
+.bhoomi-card {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(20, 33, 61, 0.03);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bhoomi-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(0, 155, 154, 0.4);
+  box-shadow: 0 16px 40px rgba(20, 33, 61, 0.08);
+}
+
+
+.card-title { font-size: 18px; color: var(--primary-navy); font-weight: 700; margin-bottom: 0.5rem; }
+.card-body { font-size: 15px; color: var(--text-secondary); line-height: 1.6; }
+
+/* Buttons */
+.btn-primary {
+  background: var(--primary-navy); color: #FFFFFF !important;
+  padding: 0 1.5rem; height: 50px; border-radius: 8px;
+  text-decoration: none; font-weight: 600; font-size: 16px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  transition: all 0.2s; border: 1px solid var(--primary-navy);
+}
+.btn-primary:hover { background: var(--secondary-navy); border-color: var(--secondary-navy); }
+
+.btn-secondary {
+  background: var(--surface); color: var(--primary-navy) !important;
+  padding: 0 1.5rem; height: 50px; border-radius: 8px;
+  text-decoration: none; font-weight: 600; font-size: 16px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  transition: all 0.2s; border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(20,33,61,0.04);
+}
+.btn-secondary:hover { background: var(--bg-light); border-color: #C2D1DF; }
+
+/* Navbar */
+.landing-navbar {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 4rem; height: 80px;
+  background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color); transition: all 0.3s ease;
+}
+.landing-navbar.scrolled { position: fixed; background: rgba(255, 255, 255, 0.98); box-shadow: 0 4px 20px rgba(20,33,61,0.05); }
+
+.brand-section { display: flex; align-items: center; gap: 0.75rem; }
+.brand-name { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; color: var(--primary-navy); }
+.brand-tagline { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
+.brand-titles { display: flex; flex-direction: column; justify-content: center; margin-left: 0.5rem; }
+.brand-name { margin-bottom: -4px; }
+
+.landing-nav-links { display: flex; gap: 1.75rem; font-weight: 600; font-size: 15px; }
+.landing-nav-links a { text-decoration: none; color: var(--text-primary); transition: color 0.2s; }
+.landing-nav-links a:hover { color: var(--primary-teal); }
+
+/* Hero Container */
+.mobile-menu-btn { display: none; background: transparent; border: none; cursor: pointer; color: var(--primary-navy); }
+
+.hero-container {
+.hero-inner { display: flex; align-items: center; width: 100%; max-width: 100%; margin: 0 auto; justify-content: space-between; }
+  display: flex; position: relative;
+  height: clamp(680px, 90vh, 860px);
+  background: var(--bg-light);
+  padding: 80px 0 0 0;
+  align-items: center; overflow: hidden;
+}
+
+.hero-content-wrapper {
+  flex: 0 0 48%; width: 100%; max-width: 680px;
+  padding: 0 2rem 0 4rem; position: relative; z-index: 20;
+  display: flex; flex-direction: column; justify-content: center;
+}
+
+.hero-eyebrow {
+  color: var(--primary-teal); font-weight: 700; letter-spacing: 0.1em; font-size: 13px;
+  text-transform: uppercase; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;
+}
+
+.hero-container .hero-title {
+  font-size: clamp(42px, 4.2vw, 64px);
+  line-height: 1.05; font-weight: 750; letter-spacing: -0.02em;
+  margin-bottom: 1.5rem; color: var(--primary-navy) !important;
+}
+.hero-container .hero-title .teal-text { color: var(--primary-teal) !important; }
+
+.hero-container .hero-subtitle {
+  font-size: clamp(16px, 1.5vw, 19px); line-height: 1.6; color: var(--text-secondary) !important;
+  margin-bottom: 2.5rem; max-width: 560px; font-weight: 400;
+}
+
+.hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.hero-trust-line { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+
+/* Hero GIS Panel */
+.hero-gis-wrapper {
+  flex: 0 0 52%; position: relative;
+  height: clamp(560px, 75vh, 720px);
+  margin-right: 4rem;
+  background: var(--bg-soft-blue);
+  border-radius: 24px; border: 1px solid var(--border-color);
+  overflow: hidden; box-shadow: 0 12px 40px rgba(20,33,61,0.06);
+}
+
+.gis-image-layer { position: absolute; inset: 0; background-image: url('/images/bhoomisetu_hero_gis.jpg'); background-size: cover; background-position: center; }
+
+/* Hero Floating Cards - Translucent */
+.gis-floating-card {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 14px; padding: 16px 20px;
+  box-shadow: 0 8px 32px rgba(20, 33, 61, 0.06);
+  z-index: 20; width: 260px;
+  animation: cardFloat 6s ease-in-out infinite;
+}
+
+@keyframes cardFloat {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
+.gis-card-label { font-size: 11px; color: var(--primary-teal); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 0.25rem; }
+.gis-card-title { font-size: 15px; color: var(--primary-navy); font-weight: 700; margin-bottom: 0.25rem; }
+.gis-card-info { font-size: 13px; color: var(--text-secondary); }
+
+.card-project { top: 2rem; right: 2rem; animation-delay: 0s; }
+.card-parcel { top: 50%; left: 1.5rem; margin-top: -40px; animation-delay: 1s; }
+.card-impact { bottom: 2rem; left: 6rem; animation-delay: 2s; }
+
+/* Sections */
+.section { padding: 100px 4rem; max-width: 100%; margin: 0 auto; width: 100%; }
+.section-wrapper { width: 100%; }
+.bg-white { background: var(--surface); }
+.bg-soft { background: var(--bg-light); }
+.bg-blue-soft { background: var(--bg-soft-blue); }
+
+/* Structural grids */
+.grid-6-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.grid-4-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+.grid-2-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+
+/* Visual Architecture & Storytelling */
+.arch-diagram { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.arch-box { background: var(--surface); border: 1px solid var(--border-color); padding: 1.5rem 2rem; border-radius: 16px; min-width: 320px; text-align: center; font-weight: 600; color: var(--primary-navy); }
+.arch-box-core { background: var(--primary-navy); color: white; border-color: var(--primary-navy); }
+.arch-box-teal { background: var(--primary-teal); color: white; border-color: var(--primary-teal); }
+.visual-flow-arrow { display: flex; justify-content: center; color: var(--primary-teal); margin: 0.5rem 0; }
+
+.timeline-container { display: flex; overflow-x: auto; padding: 2rem 0; gap: 2rem; position: relative; }
+.timeline-container::-webkit-scrollbar { height: 4px; }
+.timeline-container::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+.timeline-line { position: absolute; top: 44px; left: 0; right: 0; height: 2px; background: var(--border-color); z-index: 0; min-width: 900px; }
+.timeline-node { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; width: 140px; flex-shrink: 0; }
+.timeline-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--surface); border: 2px solid var(--primary-teal); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; color: var(--primary-navy); }
+
+/* Parcel Intelligence Diagram */
+.parcel-intelligence-map { display: flex; align-items: center; justify-content: center; gap: 3rem; }
+.parcel-core { background: var(--primary-navy); color: white; padding: 2.5rem; border-radius: 24px; width: 360px; position: relative; z-index: 2; box-shadow: 0 20px 40px rgba(16,36,71,0.15); }
+.parcel-modules { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; position: relative; }
+
+/* Footer */
+.landing-footer { background: var(--footer-bg); color: #B7C5D2; padding: 5rem 4rem 2rem 4rem; }
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 4rem; margin-bottom: 4rem; }
+.footer-col h4 { font-size: 14px; margin-bottom: 1.5rem; color: white; text-transform: uppercase; letter-spacing: 0.1em; }
+.footer-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.footer-col ul li a { color: #B7C5D2; text-decoration: none; font-size: 15px; transition: color 0.2s; }
+.footer-col ul li a:hover { color: var(--accent-teal); }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; display: flex; justify-content: space-between; font-size: 14px; }
+.footer-links { display: flex; gap: 2rem; }
+
+/* Responsive Media Queries */
+@media (max-width: 1280px) {
+  .section { padding: 80px 3rem; }
+  .landing-navbar { padding: 0 3rem; }
+  .hero-content-wrapper { padding: 0 2rem 0 3rem; }
+  .hero-gis-wrapper { margin-right: 3rem; }
+  .hero-container .hero-title { font-size: clamp(38px, 4vw, 48px); }
+}
+
+@media (max-width: 1024px) {
+  .mobile-menu-btn { display: none; background: transparent; border: none; cursor: pointer; color: var(--primary-navy); }
+
+.hero-container { height: auto; min-height: 0; padding: 100px 0 40px 0; align-items: stretch; }
+.hero-inner { display: flex; align-items: center; width: 100%; max-width: 100%; margin: 0 auto; justify-content: space-between; }
+  .hero-inner { flex-direction: column; }
+  .hero-content-wrapper { flex: none; max-width: 100%; padding: 0 3rem; margin-bottom: 3rem; text-align: center; align-items: center; }
+  .hero-subtitle { text-align: center; }
+  .hero-ctas { justify-content: center; }
+  
+  .hero-gis-wrapper { flex: none; height: 500px; margin: 0 3rem; }
+  .card-project { top: 1rem; right: 1rem; }
+  .card-parcel { top: auto; bottom: 1rem; left: 1rem; margin-top: 0; }
+  .card-impact { display: none; } /* Hide 3rd card on smaller screens to avoid clutter */
+  
+  .landing-nav-links { display: none; }
+  .mobile-menu-btn { display: block; }
+  .nav-actions .btn-primary { display: none; }
+  
+  .grid-6-cards, .grid-4-cards { grid-template-columns: repeat(2, 1fr); }
+  .parcel-intelligence-map { flex-direction: column; }
+}
+
+@media (max-width: 768px) {
+  .section { padding: 60px 1.5rem; }
+  .landing-navbar { padding: 0 1.5rem; height: 72px; }
+  .mobile-menu-btn { display: none; background: transparent; border: none; cursor: pointer; color: var(--primary-navy); }
+
+.hero-container { padding: 90px 0 2rem 0; }
+.hero-inner { display: flex; align-items: center; width: 100%; max-width: 100%; margin: 0 auto; justify-content: space-between; }
+  .hero-content-wrapper { padding: 0 1.5rem; margin-bottom: 2rem; }
+  .hero-container .hero-title { font-size: 38px; }
+  
+  .hero-gis-wrapper { margin: 0 1.5rem; height: 350px; border-radius: 16px; }
+  
+  /* Stack cards below map on mobile */
+  .gis-floating-card { position: relative; width: 100%; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; transform: none !important; animation: none; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .card-impact { display: block; }
+  
+  .mobile-cards-container { padding: 1.5rem; display: flex; flex-direction: column; }
+  
+  .grid-6-cards, .grid-4-cards, .grid-2-cards { grid-template-columns: 1fr; }
+  
+  .timeline-container { flex-direction: column; overflow: visible; align-items: flex-start; padding-left: 2rem; }
+  .timeline-line { left: 44px; top: 0; width: 2px; height: 100%; min-width: 0; }
+  .timeline-node { flex-direction: row; width: 100%; text-align: left; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .timeline-icon { margin-bottom: 0; }
+  
+  .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .footer-bottom { flex-direction: column; gap: 1.5rem; align-items: flex-start; }
+  .footer-links { flex-direction: column; gap: 1rem; }
+}
+
+.fade-up { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* Generic Product Panel used in multiple sections */
+.product-panel {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(20, 33, 61, 0.06);
+  min-height: 500px;
+}
+
+.product-panel-sidebar {
+  flex: 0 0 320px;
+  padding: 3rem 2rem;
+  background: var(--surface);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.product-panel-main {
+  flex: 1;
+  position: relative;
+  background: var(--bg-soft-blue);
+  overflow: hidden;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-navy);
+}
+
+.bg-blue-soft { background: var(--bg-soft-blue); }
+
+/* Missing map controls */
+.hero-map-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.9);
+  padding: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  backdrop-filter: blur(4px);
+}
+.map-control-btn {
+  width: 32px;
+  height: 32px;
+  background: var(--surface);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  color: var(--primary-navy);
+}
+.map-control-btn:hover { background: var(--bg-light); }
+
+@media (max-width: 1024px) {
+  .product-panel { flex-direction: column; }
+  .product-panel-sidebar { flex: none; border-right: none; border-bottom: 1px solid var(--border-color); }
+  .product-panel-main { min-height: 400px; }
+}
+
+/* Parcel Intelligence Layout */
+.parcel-profile {
+  display: flex;
+  gap: 2rem;
+  align-items: stretch;
+}
+.parcel-core {
+  flex: 0 0 350px;
+  display: flex;
+  flex-direction: column;
+}
+.parcel-tabs {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 1024px) {
+  .parcel-profile { flex-direction: column; }
+  .parcel-core { flex: none; width: 100%; }
+}
+@media (max-width: 600px) {
+  .parcel-tabs { grid-template-columns: 1fr; }
+}
+
+/* Generic Architecture Diagram Styles */
+.arch-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding: 2rem 0;
+}
+.arch-pill-group {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    z-index: 2;
+}
+.arch-pill {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.25rem;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-navy);
+    box-shadow: 0 2px 8px rgba(20,33,61,0.03);
+}
+.arch-box {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem 3rem;
+    border-radius: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-align: center;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(20,33,61,0.04);
+}
+.arch-box-core {
+    background: var(--primary-navy);
+    color: white;
+    padding: 2.5rem 4rem;
+    font-size: 1.25rem;
+    border-radius: 16px;
+    border: none;
+    letter-spacing: 0.05em;
+    box-shadow: 0 12px 32px rgba(22, 58, 112, 0.2);
+}
+.visual-flow-arrow {
+    color: var(--border-color);
+    margin: 1rem 0;
+    display: flex;
+    justify-content: center;
+    animation: bounceDown 2s infinite;
+}
+@keyframes bounceDown {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(8px); }
+    60% { transform: translateY(4px); }
+}
+
+.bhoomi-card, .bhoomi-card-small, .bhoomi-card-large {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.bhoomi-card:hover, .bhoomi-card-small:hover, .bhoomi-card-large:hover {
+    transform: translateY(-6px) !important;
+    border-color: rgba(0, 155, 154, 0.4) !important;
+    box-shadow: 0 16px 40px rgba(20, 33, 61, 0.08) !important;
+}
+
+/* Polished Footer Styles */
+.landing-footer {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    background: #0B162C; /* Extremely dark, rich navy, like Stripe/Vercel footers */
+}
+.footer-col h4 {
+    color: #FFFFFF;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+.footer-col ul li a {
+    color: #8B9BB4; /* Soft slate */
+    font-size: 14px;
+    font-weight: 500;
+}
+.footer-col ul li a:hover {
+    color: #FFFFFF;
+}
+.footer-bottom {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    color: #8B9BB4;
+}
+.footer-links a {
+    color: #8B9BB4;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.footer-links a:hover {
+    color: #FFFFFF;
+}

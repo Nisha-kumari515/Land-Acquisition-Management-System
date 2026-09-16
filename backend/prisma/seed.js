@@ -7,12 +7,6 @@ function hashDemoPassword(password) {
     return createHash('sha256').update(`bhoomisetu-demo:${password}`).digest('hex');
 }
 
-function parcelWkt(index) {
-    const x = 600000 + (index % 10) * 140;
-    const y = 2800000 + Math.floor(index / 10) * 140;
-    return `MULTIPOLYGON(((${x} ${y}, ${x + 100} ${y}, ${x + 100} ${y + 100}, ${x} ${y + 100}, ${x} ${y})))`;
-}
-
 async function clearDatabase() {
     await prisma.auditLog.deleteMany();
     await prisma.syncLog.deleteMany();
@@ -73,12 +67,51 @@ async function seed() {
             roleId: roleIds.get(RoleCode.NATIONAL_ADMIN)
         }
     });
+    const stateOfficer = await prisma.user.create({
+        data: {
+            name: 'Assam State Officer',
+            email: 'state.assam@bhoomisetu.demo',
+            passwordHash: hashDemoPassword('demo-state-password'),
+            roleId: roleIds.get(RoleCode.STATE_OFFICER),
+            stateId: assam.id
+        }
+    });
     const districtOfficer = await prisma.user.create({
         data: {
             name: 'Kamrup District Officer',
             email: 'kamrup.officer@bhoomisetu.demo',
             passwordHash: hashDemoPassword('demo-officer-password'),
             roleId: roleIds.get(RoleCode.DISTRICT_OFFICER),
+            stateId: assam.id,
+            districtId: kamrup.id
+        }
+    });
+    const acquisitionOfficer = await prisma.user.create({
+        data: {
+            name: 'Acquisition Officer',
+            email: 'acquisition@bhoomisetu.demo',
+            passwordHash: hashDemoPassword('demo-acquisition-password'),
+            roleId: roleIds.get(RoleCode.ACQUISITION_OFFICER),
+            stateId: assam.id,
+            districtId: kamrup.id
+        }
+    });
+    const financeOfficer = await prisma.user.create({
+        data: {
+            name: 'Finance Officer',
+            email: 'finance@bhoomisetu.demo',
+            passwordHash: hashDemoPassword('demo-finance-password'),
+            roleId: roleIds.get(RoleCode.FINANCE_OFFICER),
+            stateId: assam.id,
+            districtId: kamrup.id
+        }
+    });
+    const rrOfficer = await prisma.user.create({
+        data: {
+            name: 'R&R Officer',
+            email: 'rr@bhoomisetu.demo',
+            passwordHash: hashDemoPassword('demo-rr-password'),
+            roleId: roleIds.get(RoleCode.RR_OFFICER),
             stateId: assam.id,
             districtId: kamrup.id
         }
@@ -123,9 +156,6 @@ async function seed() {
         }
     });
 
-    await prisma.$executeRaw`UPDATE "Project" SET geometry = ST_GeomFromText('MULTIPOLYGON(((599800 2799700, 601600 2799700, 601600 2801200, 599800 2801200, 599800 2799700)))', 32646) WHERE id = ${projectOne.id}`;
-    await prisma.$executeRaw`UPDATE "Project" SET geometry = ST_GeomFromText('MULTIPOLYGON(((599800 2799700, 601600 2799700, 601600 2801200, 599800 2801200, 599800 2799700)))', 32646) WHERE id = ${projectTwo.id}`;
-
     const source = await prisma.dataSource.create({
         data: {
             name: 'ASSAM_DEMO_IMPORT',
@@ -150,7 +180,6 @@ async function seed() {
                 sourceId: `ASSAM-SOURCE-${String(index + 1).padStart(5, '0')}`
             }
         });
-        await prisma.$executeRaw`UPDATE "Parcel" SET geometry = ST_GeomFromText(${parcelWkt(index)}, 32646) WHERE id = ${parcel.id}`;
         await prisma.parcelOwner.create({
             data: {
                 parcelId: parcel.id,

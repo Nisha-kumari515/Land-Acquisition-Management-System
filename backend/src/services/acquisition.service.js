@@ -62,7 +62,7 @@ export async function transitionStage(id, input) {
         const expectedNextStage = validStageTransitions.get(currentCase.currentStage);
         if (expectedNextStage !== newStage) {
             throw new AppError(
-                409,
+                422,
                 'INVALID_STAGE_TRANSITION',
                 `Cannot move from ${currentCase.currentStage} to ${newStage}; expected ${expectedNextStage ?? 'no further stage'}`
             );

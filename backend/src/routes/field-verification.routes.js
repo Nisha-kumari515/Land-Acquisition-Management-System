@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import * as controller from '../controllers/field-verification.controller.js';
+import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
+const router = Router();
+router.use(requireAuth);
+router.get('/', controller.list);
+router.get('/:id', controller.get);
+router.post('/', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FIELD_OFFICER'), controller.create);
+router.patch('/:id', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER', 'FIELD_OFFICER'), controller.update);
+export default router;

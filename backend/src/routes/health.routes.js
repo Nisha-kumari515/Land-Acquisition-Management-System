@@ -1,20 +1,11 @@
 import { Router } from 'express';
-import { checkDatabaseHealth } from '../config/database.js';
+import * as healthController from '../controllers/health.controller.js';
 
 const router = Router();
 
-router.get('/', async (_request, response, next) => {
-  try {
-    const health = await checkDatabaseHealth();
-
-    response.json({
-      success: true,
-      message: 'BHOOMISETU backend is running',
-      ...health
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+router.get('/', healthController.getOverallHealth);
+router.get('/database', healthController.getDatabaseHealth);
+router.get('/postgis', healthController.getPostgisHealth);
+router.get('/integrations', healthController.getIntegrationsHealth);
 
 export default router;
