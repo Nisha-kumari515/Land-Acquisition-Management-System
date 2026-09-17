@@ -7,8 +7,16 @@ import { prisma } from './config/database.js';
 import apiRoutes from './routes/index.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { AppError } from './utils/response.js';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.js';
 
 export const app = express();
+
+app.get('/api-docs/swagger.json', (req, res) => res.json(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(null, { 
+    customSiteTitle: "BHOOMISETU API Docs",
+    swaggerOptions: { url: '/api-docs/swagger.json' }
+}));
 
 app.use(helmet({
     contentSecurityPolicy: env.nodeEnv === 'production' ? undefined : false,

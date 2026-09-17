@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchApi } from '../../lib/api';
+import { fetchApi } from '../../api/client';
 import { Database, Save } from 'lucide-react';
 
 export default function AssamBhuNakshaLookup({ onImported }) {

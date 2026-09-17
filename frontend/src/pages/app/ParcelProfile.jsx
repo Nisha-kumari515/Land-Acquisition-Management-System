@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchApi } from '../../lib/api';
+import { fetchApi } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import MapContainer from '../../components/Map/MapContainer';
 import { 

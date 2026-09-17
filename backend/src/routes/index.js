@@ -41,7 +41,9 @@ import searchRoutes from './search.routes.js';
 import mapRoutes from './map.routes.js';
 import dataQualityRoutes from './data-quality.routes.js';
 import citizenRoutes from './citizen.routes.js';
+import adminRoutes from './admin.routes.js';
 
+router.use('/admin', adminRoutes);
 router.use('/search', searchLimiter, searchRoutes);
 router.use('/map', gisLimiter, mapRoutes);
 router.use('/data-quality', dataQualityRoutes);

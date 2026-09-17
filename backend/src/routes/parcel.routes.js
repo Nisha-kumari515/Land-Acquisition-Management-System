@@ -9,6 +9,7 @@ router.use(requireAuth);
 
 router.get('/', parcelController.list);
 router.get('/:id', parcelController.getById);
+router.get('/:id/geometry', parcelController.getGeometry);
 router.get('/:id/intelligence', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER', 'ACQUISITION_OFFICER'), parcelController.getParcelIntelligence);
 router.get('/:id/source', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER'), parcelController.getParcelSource);
 router.get('/:id/source-history', requireRole('NATIONAL_ADMIN', 'STATE_OFFICER', 'DISTRICT_OFFICER'), parcelController.getParcelSourceHistory);

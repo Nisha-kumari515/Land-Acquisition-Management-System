@@ -2,7 +2,7 @@ import { prisma } from '../config/database.js';
 import { AppError } from '../utils/response.js';
 import { getPagination, paginatedResponse } from '../utils/pagination.js';
 
-const projectStatuses = new Set(['PROPOSED', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'CANCELLED']);
+const projectStatuses = new Set(['DRAFT', 'SUBMITTED', 'UNDER_SCRUTINY', 'APPROVED', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CLOSED']);
 const riskLevels = new Set(['LOW', 'MEDIUM', 'HIGH']);
 
 const projectInclude = {
@@ -21,7 +21,7 @@ function projectData(input) {
         projectType: input.projectType ?? null,
         stateId: input.stateId,
         districtId: input.districtId ?? null,
-        status: input.status ?? undefined,
+        status: input.status ?? 'DRAFT',
         startDate: input.startDate ? new Date(input.startDate) : null,
         targetDate: input.targetDate ? new Date(input.targetDate) : null,
         createdById: input.createdById
@@ -42,6 +42,48 @@ async function assertState(stateId) {
 async function assertCreator(createdById) {
     const user = await prisma.user.findUnique({ where: { id: createdById } });
     if (!user) throw new AppError(400, 'INVALID_CREATOR', 'createdById does not exist');
+}
+
+async function transitionProjectStatus(id, newStatus, userId, allowedCurrent) {
+    const project = await getProject(id);
+    if (!allowedCurrent.includes(project.status)) {
+        throw new AppError(400, 'INVALID_STATE_TRANSITION', `Cannot transition project from ${project.status} to ${newStatus}`);
+    }
+    
+    const updated = await prisma.project.update({
+        where: { id },
+        data: { status: newStatus },
+        include: projectInclude
+    });
+
+    await prisma.auditLog.create({
+        data: {
+            userId: userId,
+            action: `PROJECT_STATUS_CHANGED`,
+            entity: 'PROJECT',
+            entityId: id,
+            previousValue: { status: project.status },
+            newValue: { status: newStatus }
+        }
+    });
+
+    return updated;
+}
+
+export async function submitProject(id, userId) {
+    return transitionProjectStatus(id, 'SUBMITTED', userId, ['DRAFT']);
+}
+
+export async function approveProject(id, userId) {
+    return transitionProjectStatus(id, 'APPROVED', userId, ['SUBMITTED', 'UNDER_SCRUTINY']);
+}
+
+export async function rejectProject(id, userId) {
+    return transitionProjectStatus(id, 'DRAFT', userId, ['SUBMITTED', 'UNDER_SCRUTINY']);
+}
+
+export async function archiveProject(id, userId) {
+    return transitionProjectStatus(id, 'CLOSED', userId, ['DRAFT', 'ON_HOLD', 'COMPLETED', 'CANCELLED']);
 }
 
 export async function listProjects(query) {

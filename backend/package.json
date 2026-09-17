@@ -13,20 +13,35 @@
     "prisma:validate": "prisma validate",
     "prisma:format": "prisma format",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "import:assam": "node src/scripts/import-assam.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
+<<<<<<< HEAD
     "cors": "^2.8.6",
+=======
+<<<<<<< HEAD
+    "cors": "^2.8.6",
+=======
+    "cors": "^2.8.5",
+    "csv-parser": "^3.2.1",
+>>>>>>> 79ded9197fa8a5da1d16d9492e6393ad0c44a92b
+>>>>>>> 8d8ae3f71bfb4560461eedb5018c5b955a8dcd6a
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
+    "express-list-endpoints": "^7.1.1",
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.1.0",
+    "JSONStream": "^1.3.5",
     "jsonwebtoken": "^9.0.3",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "strip-bom-stream": "^5.0.0",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "prisma": "^6.12.0"
+    "prisma": "^6.19.3"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

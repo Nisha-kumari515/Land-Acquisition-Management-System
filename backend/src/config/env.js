@@ -36,7 +36,7 @@ if (!Number.isInteger(assamStaleAfterMs) || assamStaleAfterMs < 1000) {
 }
 
 if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is required');
+  throw new Error('process.env.DATABASE_URL');
 }
 
 export const env = {

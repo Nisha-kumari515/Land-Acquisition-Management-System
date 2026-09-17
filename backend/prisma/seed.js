@@ -127,6 +127,11 @@ async function seed() {
         }
     });
 
+    if (process.env.SEED_DEMO_DATA !== 'true') {
+        console.log('Seed complete: Base infrastructure (Roles, States, Districts, Users) seeded. SEED_DEMO_DATA is not set, skipping synthetic parcels and projects.');
+        return;
+    }
+
     const projectOne = await prisma.project.create({
         data: {
             code: 'AS-RIVER-001',
