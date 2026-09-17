@@ -18,16 +18,9 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
-<<<<<<< HEAD
-    "cors": "^2.8.6",
-=======
-<<<<<<< HEAD
-    "cors": "^2.8.6",
-=======
+
     "cors": "^2.8.5",
     "csv-parser": "^3.2.1",
->>>>>>> 79ded9197fa8a5da1d16d9492e6393ad0c44a92b
->>>>>>> 8d8ae3f71bfb4560461eedb5018c5b955a8dcd6a
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "express-list-endpoints": "^7.1.1",
