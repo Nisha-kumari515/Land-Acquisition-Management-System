@@ -4,12 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-<<<<<<< HEAD
   url      = env("DATABASE_URL")
-  shadowDatabaseUrl  = env("SHADOW_DATABASE_URL")
-=======
-  url = env("DATABASE_URL")
->>>>>>> 79ded9197fa8a5da1d16d9492e6393ad0c44a92b
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 enum RoleCode {
